@@ -139,6 +139,10 @@ Free for one person working alone: unlimited models, MCP and REST API, Excel and
 - [cookbook](https://github.com/layerzlabs/cookbook): recipes for financial work with AI agents
 - [layerz.cc](https://layerz.cc): the web app, where people review, share and collaborate on the same models
 
+## Versioning
+
+One version, the server's. The number published to the [official MCP Registry](https://registry.modelcontextprotocol.io) (`io.github.layerzlabs/layerz`, from the `server.json` of the Layerz code repo) is the only version; `lhm.plugin.json` and `.cursor-plugin/plugin.json` here mirror it, never one of their own. A change to this repository alone (a tool declared, a description reworded) ships under the current version. `node scripts/check-version.mjs` (run on every push and weekly) fails when the manifests disagree or run behind the registry, and only warns when a publish is pending.
+
 ## Support
 
 Questions or stuck on setup: [contact@layerz.cc](mailto:contact@layerz.cc). Bugs and requests: open an issue in this repository.
