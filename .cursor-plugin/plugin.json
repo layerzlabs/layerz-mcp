@@ -1,0 +1,11 @@
+{
+  "name": "layerz",
+  "version": "0.5.0",
+  "description": "Financial models your agent builds and edits: items, formulas, dependencies, branches. Versioned, exported to standard Excel with live formulas.",
+  "author": { "name": "Layerz", "email": "contact@layerz.cc" },
+  "homepage": "https://layerz.cc/for-agents",
+  "repository": "https://github.com/layerzlabs/layerz-mcp",
+  "license": "MIT",
+  "keywords": ["finance", "financial-modeling", "excel", "fpa", "spreadsheet", "budget", "forecast"],
+  "logo": "assets/logo.svg"
+}

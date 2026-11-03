@@ -1,0 +1,21 @@
+{
+  "identifier": "layerzlabs-layerz",
+  "name": "Layerz",
+  "version": "0.5.0",
+  "author": "Layerz",
+  "authorUrl": "https://github.com/layerzlabs",
+  "homepage": "https://layerz.cc/for-agents",
+  "cloudEndpoint": "https://layerz.cc/mcp",
+  "icon": "https://layerz.cc/icon.png",
+  "description": "Financial models your AI agent builds and edits through MCP: items, formulas, dependencies and branches, not only rows. Versioned, auditable, exported to standard Excel with live formulas.",
+  "tags": [
+    "finance",
+    "financial-modeling",
+    "excel",
+    "fpa",
+    "spreadsheet",
+    "budget",
+    "forecast",
+    "cfo"
+  ]
+}
