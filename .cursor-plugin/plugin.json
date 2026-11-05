@@ -1,6 +1,6 @@
 {
   "name": "layerz",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Financial models your agent builds and edits: items, formulas, dependencies, branches. Versioned, exported to standard Excel with live formulas.",
   "author": { "name": "Layerz", "email": "contact@layerz.cc" },
   "homepage": "https://layerz.cc/for-agents",

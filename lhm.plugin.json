@@ -1,7 +1,7 @@
 {
   "identifier": "layerzlabs-layerz",
   "name": "Layerz",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "author": "Layerz",
   "authorUrl": "https://github.com/layerzlabs",
   "homepage": "https://layerz.cc/for-agents",
@@ -50,7 +50,7 @@
     {
       "name": "layerz_get_model",
       "title": "Get model detail",
-      "description": "Returns the full detail of a model: items, lists, timelines, custom `formats`, `number_locale`, `glyph`, `revision_id` (sha256 fingerprint) and `version_number`, plus `branches[]` (id, display_name, priority, actuals_through, actuals_through_locked) and `sharing` with the roster (`members[]`: owner, collaborators and pending invites with their roles and ids, `is_owner`, `link_visibility`: `invite` = sign-in required, `public` = anyone with the link reads it). Larger payload than `layerz_read`, which returns a filtered snapshot.",
+      "description": "Returns the full detail of a model: items, lists, timelines, custom `formats`, `number_locale`, `glyph`, `revision_id` (sha256 fingerprint) and `version_number`, plus `branches[]` (id, display_name, priority, actuals_through, actuals_through_locked) and `sharing` with the roster (`members[]`: owner, collaborators and pending invites with their roles and ids, `is_owner`, `link_visibility`: `invite` = sign-in required, `public` = anyone with the link reads it). Item values are the base plan; read a branch with `layerz_read` `branch_id`. Larger payload than `layerz_read`, which returns a filtered snapshot.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -209,7 +209,7 @@
     {
       "name": "layerz_read",
       "title": "Read model snapshot",
-      "description": "Returns a UID-native snapshot of a model: `model` (name, timelines, lists, branches), `items` (flat, `parent_uid` carries the hierarchy, each with role, formula, check, note) and `revision_id` / `version_number`. Filters: `uids`, `roles`, `include_children`. `with_values: true` adds the computed series `v` aligned with the periods `p` (`periods` for explicit labels of mixed grains, else `granularity`), `variance` adds `vv`, `per_element` adds `ve` for list-mode items, `health` adds the check report, `branch_id` computes `v` and `health` under one branch's `[base, branch]` checkout instead of the stacked view. The check report is judged on a branch checkout, not the stacked view: without `branch_id`, a multi-branch model reports the branch it opens on (`health.branch_id`) and every branch under `health.by_branch`. When the response leads with `computable: false`, `errors[]` names the broken dependencies (e.g. `CIRCULAR_DEPENDENCY`) and every series is a zero-filled placeholder.",
+      "description": "Returns a UID-native snapshot of a model: `model` (name, timelines, lists, branches), `items` (flat, `parent_uid` carries the hierarchy, each with role, formula, check, note; values are the base plan) and `revision_id` / `version_number`. Filters: `uids`, `roles`, `include_children`. `with_values: true` adds the computed series `v` aligned with the periods `p` (`periods` for explicit labels of mixed grains, else `granularity`), `variance` adds `vv`, `per_element` adds `ve` for list-mode items, `health` adds the check report, `branch_id` computes `v` and `health` under one branch's `[base, branch]` checkout, else they are the base plan. The check report is judged on a branch checkout: without `branch_id`, a multi-branch model reports the branch it opens on (`health.branch_id`) and every branch under `health.by_branch`. When the response leads with `computable: false`, `errors[]` names the broken dependencies (e.g. `CIRCULAR_DEPENDENCY`) and every series is a zero-filled placeholder.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -283,11 +283,11 @@
             ]
           },
           "variance": {
-            "description": "Also return the variance series `vv` (stacked-all view − base baseline), aligned with `v`. Requires with_values.",
+            "description": "Also return the variance series `vv` (the `branch_id` checkout − the base plan), aligned with `v`. Requires with_values and branch_id.",
             "type": "boolean"
           },
           "health": {
-            "description": "Also returns the `health` block: non-blocking check violations (lines flagged `check`), evaluated at the finest active grain under a branch checkout rather than the stacked view: the `branch_id` requested, else on a multi-branch model the branch the model opens on (`health.branch_id`) with every branch's verdict under `health.by_branch`. `with_values: true` already includes `health` when the model has checks; this flag returns `health` without the full value series.",
+            "description": "Also returns the `health` block: non-blocking check violations (lines flagged `check`), evaluated at the finest active grain under a branch checkout: the `branch_id` requested, else on a multi-branch model the branch the model opens on (`health.branch_id`) with every branch's verdict under `health.by_branch`. `with_values: true` already includes `health` when the model has checks; this flag returns `health` without the full value series.",
             "type": "boolean"
           },
           "per_element": {
@@ -295,7 +295,7 @@
             "type": "boolean"
           },
           "branch_id": {
-            "description": "Branch whose `[base, branch]` checkout the values `v` and the check report `health` are computed under, instead of the stacked-all view (base-vs-overlay audit); `default` = the base plan alone. An unknown id is rejected. Requires with_values or health.",
+            "description": "Branch whose `[base, branch]` checkout the values `v` and the check report `health` are computed under. Absent: the base plan. An unknown id is rejected. Requires with_values or health.",
             "type": "string",
             "minLength": 1
           }
@@ -2428,7 +2428,7 @@
             }
           },
           "compute_branch": {
-            "description": "Branch whose `[base, branch]` checkout the `compute` values are returned under, instead of the stacked-all view (mirror of `layerz_read` `branch_id`); `default` = the base plan alone. Defaults to `branch_id` when that is set. Requires `compute`.",
+            "description": "Branch whose `[base, branch]` checkout the `compute` values are returned under (mirror of `layerz_read` `branch_id`). Defaults to `branch_id` when that is set, else the base plan. Requires `compute`.",
             "type": "string",
             "minLength": 1
           },
