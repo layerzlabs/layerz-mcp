@@ -1,7 +1,7 @@
 {
   "identifier": "layerzlabs-layerz",
   "name": "Layerz",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "author": "Layerz",
   "authorUrl": "https://github.com/layerzlabs",
   "homepage": "https://layerz.cc/for-agents",
@@ -22,7 +22,7 @@
     {
       "name": "layerz_list_models",
       "title": "List models",
-      "description": "Lists the models the authenticated user can access, and the workspaces they belong to (`workspaces[]`: id, name, kind personal | team, role admin | member, plan). Each model carries `workspace_id`, `can_write` (owner, workspace member or editor guest), `url`, `glyph` and `sharing: { shared, member_count, link_visibility }`. `q` filters by name (case- and accent-insensitive substring, `*` wildcard), `writable: true` keeps owner/editor models only. A model-scoped key gets its bound model only.",
+      "description": "Lists the models the authenticated user can access, and the workspaces they belong to (`workspaces[]`: id, name, kind personal | team, role admin | member, plan, `has_conventions`). Each model carries `workspace_id`, `can_write` (owner, workspace member or editor guest), `url`, `glyph` and `sharing: { shared, member_count, link_visibility }`. `q` filters by name (case- and accent-insensitive substring, `*` wildcard), `writable: true` keeps owner/editor models only. A model-scoped key gets its bound model only.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -50,7 +50,7 @@
     {
       "name": "layerz_get_model",
       "title": "Get model detail",
-      "description": "Returns the full detail of a model: items, lists, timelines, custom `formats`, `number_locale`, `glyph`, `revision_id` (sha256 fingerprint) and `version_number`, plus `branches[]` (id, display_name, priority, actuals_through, actuals_through_locked) and `sharing` with the roster (`members[]`: owner, collaborators and pending invites with their roles and ids, `is_owner`, `link_visibility`: `invite` = sign-in required, `public` = anyone with the link reads it). Item values are the base plan; read a branch with `layerz_read` `branch_id`. Larger payload than `layerz_read`, which returns a filtered snapshot.",
+      "description": "Returns the full detail of a model: items, lists, timelines, custom `formats`, `number_locale`, `glyph`, `revision_id` (sha256 fingerprint) and `version_number`, plus `branches[]` (id, display_name, priority, actuals_through, actuals_through_locked) and `sharing` with the roster (`members[]`: owner, collaborators and pending invites with their roles and ids, `is_owner`, `link_visibility`: `invite` = sign-in required, `public` = anyone with the link reads it). Item values are the base plan; read a branch with `layerz_read` `branch_id`. Larger payload than `layerz_read`, which returns a filtered snapshot. `conventions` carries the workspace conventions and the model FINANCE.md (as in `layerz_get_conventions`) when either is set.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -74,7 +74,7 @@
     {
       "name": "layerz_create_model",
       "title": "Create model",
-      "description": "Creates a model and returns its detail with its UUID, in `workspace_id` (a workspace the caller belongs to; default the personal one) where every member of that workspace edits it. `template_id` copies a template (official, or from the library of a workspace the caller belongs to) into the new model with its sources, staged transactions and mapping rules under fresh ids (connector credentials excluded); the template itself is unchanged, `timelines` sets its bounds, `glyph` its emblem (a kebab-case Lucide icon name, e.g. SaaS `trending-up`, banking `landmark`, real estate `house`, coffee shop `coffee`, energy `wind`, HR `users`, valuation `scale`, treasury `wallet`). Rejected past the plan model cap. Not advertised to model-scoped or read-only keys.",
+      "description": "Creates a model and returns its detail with its UUID, in `workspace_id` (a workspace the caller belongs to; default the personal one) where every member of that workspace edits it. `template_id` copies a template (official, or from the library of a workspace the caller belongs to) into the new model with its sources, staged transactions and mapping rules under fresh ids (connector credentials excluded); the template itself is unchanged. `timelines` sets the grains and bounds (only the grains given: `{ monthly }` alone gives a monthly-only model; on a template, the bounds), `glyph` its emblem (a kebab-case Lucide icon name, e.g. SaaS `trending-up`, banking `landmark`, real estate `house`, coffee shop `coffee`, energy `wind`, HR `users`, valuation `scale`, treasury `wallet`). `conventions` carries the conventions of the workspace it lands in and its FINANCE.md (as in `layerz_get_conventions`) when either is set. Rejected past the plan model cap. Not advertised to model-scoped or read-only keys.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -209,7 +209,7 @@
     {
       "name": "layerz_read",
       "title": "Read model snapshot",
-      "description": "Returns a UID-native snapshot of a model: `model` (name, timelines, lists, branches), `items` (flat, `parent_uid` carries the hierarchy, each with role, formula, check, note; values are the base plan) and `revision_id` / `version_number`. Filters: `uids`, `roles`, `include_children`. `with_values: true` adds the computed series `v` aligned with the periods `p` (`periods` for explicit labels of mixed grains, else `granularity`), `variance` adds `vv`, `per_element` adds `ve` for list-mode items, `health` adds the check report, `branch_id` computes `v` and `health` under one branch's `[base, branch]` checkout, else they are the base plan. The check report is judged on a branch checkout: without `branch_id`, a multi-branch model reports the branch it opens on (`health.branch_id`) and every branch under `health.by_branch`. When the response leads with `computable: false`, `errors[]` names the broken dependencies (e.g. `CIRCULAR_DEPENDENCY`) and every series is a zero-filled placeholder.",
+      "description": "Returns a UID-native snapshot of a model: `model` (name, timelines, lists, branches), `items` (flat, `parent_uid` carries the hierarchy, each with role, formula, check, note; values are the base plan) and `revision_id` / `version_number`. Filters: `uids`, `roles`, `include_children`. `with_values: true` adds the computed series `v` aligned with the periods `p` (`periods` for explicit labels of mixed grains, else `granularity`), `variance` adds `vv`, `per_element` adds `ve` for list-mode items, `health` adds the check report, `branch_id` computes `v` and `health` under one branch's `[base, branch]` checkout, else they are the base plan. The check report is judged on a branch checkout: without `branch_id`, a multi-branch model reports the branch it opens on (`health.branch_id`) and every branch under `health.by_branch`. When the response leads with `computable: false`, `errors[]` names the broken dependencies (e.g. `CIRCULAR_DEPENDENCY`) and every series is a zero-filled placeholder. A read without `uids` or `roles` also carries `conventions` (workspace conventions + model FINANCE.md, as in `layerz_get_conventions`) when either is set.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -426,7 +426,7 @@
                       "maxLength": 200
                     },
                     "role": {
-                      "description": "Change the item role. Role of the item. assumption: a typed input (value / values / timeline_values), the only role a branch overlays. formula: a computed transformation (formula). formula with no expression and children: an aggregator that sums its children (a subtotal value; a nested section is structural grouping with no value). callup: a typed mirror of one source whose value flows into its parent (source): balance flows, a value surfaced in a section or subtotal; a formula references its source directly instead. balance: a rolling stock (opening_balance) that sums its callup-child flows. section: structural container, no value. dashboard / chart / kpi / mini_table: presentational. A formula carrying both an expression and children is rejected (FORMULA_EXPR_AND_CHILDREN). A single bare reference written as a formula is auto-posed as a callup mirror.",
+                      "description": "Change the item role. Role of the item. assumption: a typed input (value / values / timeline_values), the only role a branch overlays. formula: a computed transformation (formula). formula with no expression and children: an aggregator that sums its children (a subtotal value; a nested section is structural grouping with no value). callup: a typed mirror of one source whose value flows into its parent (source): balance flows, a value surfaced in a section or subtotal; a formula references its source directly instead. balance: a rolling stock (opening_balance) that sums its callup-child flows. section: structural container, no value. dashboard / chart / kpi / mini_table: presentational. A formula carrying both an expression and children is rejected (FORMULA_EXPR_AND_CHILDREN). A single bare reference written as a formula is auto-posed as a callup mirror, unless it pins a `timeline_ref` or an `aggregation` different from its source (then it stays a formula).",
                       "type": "string",
                       "enum": [
                         "assumption",
@@ -493,7 +493,7 @@
                       "type": "boolean"
                     },
                     "timeline_values": {
-                      "description": "Periodic values, keyed by context. List-mode item: one series per list entry, keyed by the element UID, label, or a `list_create` temp id of the same batch (a temp id is scoped to the batch that declares it; later batches key by label or UID). Non-list item: a sparse per-period patch keyed by period id (`{\"2026-06\": -119.19}`, keys YYYY / YYYY-MM / YYYY-Qn) that rewrites the named cells of the typed `values` series and leaves the rest intact; a full series keyed by a canonical grain (`monthly` / `quarterly` / `yearly` / `constant`) is import-owned and rejected here. A single number is coerced to a 1-element array. List cells left unset read as 0 (no forward-fill).",
+                      "description": "Periodic values, keyed by context. List-mode item: one series per list entry, keyed by the element UID, label, or a `list_create` temp id of the same batch (a temp id is scoped to the batch that declares it; later batches key by label or UID). On `update` the map merges element by element: entries it does not name keep their series (send `[]` to clear one); on `create` / `replace` it is the full set. Non-list item: a sparse per-period patch keyed by period id (`{\"2026-06\": -119.19}`, keys YYYY / YYYY-MM / YYYY-Qn) that rewrites the named cells of the typed `values` series and leaves the rest intact; a full series keyed by a canonical grain (`monthly` / `quarterly` / `yearly` / `constant`) is import-owned and rejected here. A single number is coerced to a 1-element array. List cells left unset read as 0 (no forward-fill).",
                       "type": "object",
                       "propertyNames": {
                         "type": "string"
@@ -548,7 +548,8 @@
                       "enum": [
                         "sum",
                         "average",
-                        "stock"
+                        "stock",
+                        "first"
                       ]
                     },
                     "parent": {
@@ -985,7 +986,7 @@
                         "kpi",
                         "mini_table"
                       ],
-                      "description": "Role of the item. assumption: a typed input (value / values / timeline_values), the only role a branch overlays. formula: a computed transformation (formula). formula with no expression and children: an aggregator that sums its children (a subtotal value; a nested section is structural grouping with no value). callup: a typed mirror of one source whose value flows into its parent (source): balance flows, a value surfaced in a section or subtotal; a formula references its source directly instead. balance: a rolling stock (opening_balance) that sums its callup-child flows. section: structural container, no value. dashboard / chart / kpi / mini_table: presentational. A formula carrying both an expression and children is rejected (FORMULA_EXPR_AND_CHILDREN). A single bare reference written as a formula is auto-posed as a callup mirror."
+                      "description": "Role of the item. assumption: a typed input (value / values / timeline_values), the only role a branch overlays. formula: a computed transformation (formula). formula with no expression and children: an aggregator that sums its children (a subtotal value; a nested section is structural grouping with no value). callup: a typed mirror of one source whose value flows into its parent (source): balance flows, a value surfaced in a section or subtotal; a formula references its source directly instead. balance: a rolling stock (opening_balance) that sums its callup-child flows. section: structural container, no value. dashboard / chart / kpi / mini_table: presentational. A formula carrying both an expression and children is rejected (FORMULA_EXPR_AND_CHILDREN). A single bare reference written as a formula is auto-posed as a callup mirror, unless it pins a `timeline_ref` or an `aggregation` different from its source (then it stays a formula)."
                     },
                     "name": {
                       "type": "string",
@@ -1046,7 +1047,7 @@
                       }
                     },
                     "timeline_values": {
-                      "description": "Periodic values, keyed by context. List-mode item: one series per list entry, keyed by the element UID, label, or a `list_create` temp id of the same batch (a temp id is scoped to the batch that declares it; later batches key by label or UID). Non-list item: a sparse per-period patch keyed by period id (`{\"2026-06\": -119.19}`, keys YYYY / YYYY-MM / YYYY-Qn) that rewrites the named cells of the typed `values` series and leaves the rest intact; a full series keyed by a canonical grain (`monthly` / `quarterly` / `yearly` / `constant`) is import-owned and rejected here. A single number is coerced to a 1-element array. List cells left unset read as 0 (no forward-fill).",
+                      "description": "Periodic values, keyed by context. List-mode item: one series per list entry, keyed by the element UID, label, or a `list_create` temp id of the same batch (a temp id is scoped to the batch that declares it; later batches key by label or UID). On `update` the map merges element by element: entries it does not name keep their series (send `[]` to clear one); on `create` / `replace` it is the full set. Non-list item: a sparse per-period patch keyed by period id (`{\"2026-06\": -119.19}`, keys YYYY / YYYY-MM / YYYY-Qn) that rewrites the named cells of the typed `values` series and leaves the rest intact; a full series keyed by a canonical grain (`monthly` / `quarterly` / `yearly` / `constant`) is import-owned and rejected here. A single number is coerced to a 1-element array. List cells left unset read as 0 (no forward-fill).",
                       "type": "object",
                       "propertyNames": {
                         "type": "string"
@@ -1101,7 +1102,8 @@
                       "enum": [
                         "sum",
                         "average",
-                        "stock"
+                        "stock",
+                        "first"
                       ]
                     },
                     "source": {
@@ -1525,7 +1527,7 @@
                             "kpi",
                             "mini_table"
                           ],
-                          "description": "Role of the item. assumption: a typed input (value / values / timeline_values), the only role a branch overlays. formula: a computed transformation (formula). formula with no expression and children: an aggregator that sums its children (a subtotal value; a nested section is structural grouping with no value). callup: a typed mirror of one source whose value flows into its parent (source): balance flows, a value surfaced in a section or subtotal; a formula references its source directly instead. balance: a rolling stock (opening_balance) that sums its callup-child flows. section: structural container, no value. dashboard / chart / kpi / mini_table: presentational. A formula carrying both an expression and children is rejected (FORMULA_EXPR_AND_CHILDREN). A single bare reference written as a formula is auto-posed as a callup mirror."
+                          "description": "Role of the item. assumption: a typed input (value / values / timeline_values), the only role a branch overlays. formula: a computed transformation (formula). formula with no expression and children: an aggregator that sums its children (a subtotal value; a nested section is structural grouping with no value). callup: a typed mirror of one source whose value flows into its parent (source): balance flows, a value surfaced in a section or subtotal; a formula references its source directly instead. balance: a rolling stock (opening_balance) that sums its callup-child flows. section: structural container, no value. dashboard / chart / kpi / mini_table: presentational. A formula carrying both an expression and children is rejected (FORMULA_EXPR_AND_CHILDREN). A single bare reference written as a formula is auto-posed as a callup mirror, unless it pins a `timeline_ref` or an `aggregation` different from its source (then it stays a formula)."
                         },
                         "name": {
                           "type": "string",
@@ -1586,7 +1588,7 @@
                           }
                         },
                         "timeline_values": {
-                          "description": "Periodic values, keyed by context. List-mode item: one series per list entry, keyed by the element UID, label, or a `list_create` temp id of the same batch (a temp id is scoped to the batch that declares it; later batches key by label or UID). Non-list item: a sparse per-period patch keyed by period id (`{\"2026-06\": -119.19}`, keys YYYY / YYYY-MM / YYYY-Qn) that rewrites the named cells of the typed `values` series and leaves the rest intact; a full series keyed by a canonical grain (`monthly` / `quarterly` / `yearly` / `constant`) is import-owned and rejected here. A single number is coerced to a 1-element array. List cells left unset read as 0 (no forward-fill).",
+                          "description": "Periodic values, keyed by context. List-mode item: one series per list entry, keyed by the element UID, label, or a `list_create` temp id of the same batch (a temp id is scoped to the batch that declares it; later batches key by label or UID). On `update` the map merges element by element: entries it does not name keep their series (send `[]` to clear one); on `create` / `replace` it is the full set. Non-list item: a sparse per-period patch keyed by period id (`{\"2026-06\": -119.19}`, keys YYYY / YYYY-MM / YYYY-Qn) that rewrites the named cells of the typed `values` series and leaves the rest intact; a full series keyed by a canonical grain (`monthly` / `quarterly` / `yearly` / `constant`) is import-owned and rejected here. A single number is coerced to a 1-element array. List cells left unset read as 0 (no forward-fill).",
                           "type": "object",
                           "propertyNames": {
                             "type": "string"
@@ -1641,7 +1643,8 @@
                           "enum": [
                             "sum",
                             "average",
-                            "stock"
+                            "stock",
+                            "first"
                           ]
                         },
                         "source": {
@@ -2463,7 +2466,7 @@
     {
       "name": "layerz_build_from_blueprint",
       "title": "Build from blueprint",
-      "description": "Builds or extends a model from a strict Blueprint (whole sections with their hierarchy, items referenced by name), or applies a stored template as a module through `template_id` (mutually exclusive with `blueprint`, loaded server-side). `mode: 'merge'` (default) adds to the model, reusing items by name and keeping the presentation fields a re-declared item omits; `mode: 'replace'` rebuilds the whole model (structure, timelines, values, branches), keeping style colours, custom formats, locale, glyph, subtitle and FINANCE.md. `dry_run: true` validates and returns errors with their path without writing. Persists one version labelled with `summary`. Not advertised to read-only keys.",
+      "description": "Builds or extends a model from a strict Blueprint (whole sections with their hierarchy, items referenced by name), or applies a stored template as a module through `template_id` (mutually exclusive with `blueprint`, loaded server-side). `mode: 'merge'` (default) adds to the model, reusing items by name and keeping the presentation fields a re-declared item omits; `mode: 'replace'` rebuilds the whole model (structure, timelines, values, branches), keeping style colours, custom formats, locale, glyph, subtitle and FINANCE.md. `dry_run: true` validates and returns errors with their path without writing; `apply_if_clean: true` validates and writes only when there is no error (one call instead of a dry run then the same blueprint again). A large blueprint can come as `file_id` (a JSON file uploaded through `layerz_create_upload_url`) instead of `blueprint`. UIDs are stable for a given model, so a dry run's `name_to_uid` holds for the apply. The result is concise: `name_to_uid`, counters, warnings / errors, `version_number` and `revision_id`, `health` when the model has checks; `include_items: true` adds every item of the model. Persists one version labelled with `summary`. The result carries `conventions` (workspace conventions + model FINANCE.md, as in `layerz_get_conventions`) when either is set. Not advertised to read-only keys.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -2480,7 +2483,7 @@
             "description": "Short note (3–100 chars) describing the change, stored as the label of the resulting version. Examples: \"Renamed Revenue to Net Revenue\", \"Imported 2024 OPEX from Excel\"."
           },
           "blueprint": {
-            "description": "Strict Blueprint object: { project?, timelines?: { monthly? | quarterly? | yearly?: { start, end } }, lists?: [{ display_name, items: [{ label, mapped_to?: Record<listName, labels[]> }] }], sections: [{ name, items: [{ role, name, timeline_ref?, value?, values?, formula?, item_style?, opening_balance?, liste_ref?, timeline_values?: Record<elementLabel, (number|null)[]>, children?, … }] }], dashboards?: [{ name, items: [{ role: chart | kpi | mini_table, … }] }] }. At least one section is required. Items reference each other by name (formula inputs, callup source, chart series); a callup omits `name` and inherits its source's. A list-mode item binds a declared list through `liste_ref` and carries `timeline_values` keyed by element label; a `balance` with `liste_ref` requires every list-typed child to share it. Accepted as a JSON object or a JSON-encoded string.",
+            "description": "Strict Blueprint object: { project?, timelines?: { monthly? | quarterly? | yearly?: { start, end } }, lists?: [{ display_name, items: [{ label, mapped_to?: Record<listName, labels[]> }] }], sections: [{ name, collapsed?, sections?: [sub-sections, same shape], items: [{ role, name, timeline_ref?, value?, values?, formula?, item_style?, opening_balance?, liste_ref?, timeline_values?: Record<elementLabel, (number|null)[]>, children?, … }] }], dashboards?: [{ name, items: [{ role: chart | kpi | mini_table, … }] }] } (`charts` / `kpis` / `tables` arrays are accepted in place of `items`). At least one section is required. Items reference each other by name (formula inputs, callup source, chart series); a callup omits `name` and inherits its source's. A list-mode item binds a declared list through `liste_ref` and carries `timeline_values` keyed by element label; a `balance` with `liste_ref` requires every list-typed child to share it. Accepted as a JSON object or a JSON-encoded string.",
             "anyOf": [
               {
                 "type": "object",
@@ -2500,6 +2503,10 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
+          "file_id": {
+            "description": "Uploaded JSON file holding the blueprint (`layerz_create_upload_url`), instead of `blueprint`.",
+            "type": "string"
+          },
           "mode": {
             "description": "'merge' (default): adds to the existing model, reusing items by name. 'replace': rebuilds the whole model from the blueprint.",
             "type": "string",
@@ -2510,6 +2517,14 @@
           },
           "dry_run": {
             "description": "Validates the blueprint and reports errors without writing.",
+            "type": "boolean"
+          },
+          "apply_if_clean": {
+            "description": "Validates, then writes only when there is no error (else answers as a dry run).",
+            "type": "boolean"
+          },
+          "include_items": {
+            "description": "Also return every item of the resulting model (large).",
             "type": "boolean"
           }
         },
@@ -2529,7 +2544,7 @@
     {
       "name": "layerz_import_branch",
       "title": "Import data into branch",
-      "description": "Writes values onto a branch of the model, creating the branch when `branch.id` names none (`branch.display_name` required then). Two sources, mutually exclusive: `entries[]` (one value per item and period, items resolved by `item_uid` or `item_label`, created as assumptions when absent; `entry_uid` / `entry_label` target one entry of a list-mode item) or `file_id` (an uploaded spreadsheet parsed server-side, rows classified with the source's mapping rules). A new version of a file already imported: `file_id` + `replace_source_id`, nothing else (refreshed in place, its rows replaced on the branch it feeds, the default branch included). A new file of a kind the model already has: `file_id` + `rules_from_source_id` (classified with that sibling's rules, copied onto the new source). An entry's `timeline_ref` equals the target item's grain or `constant`; on a `formula` / `balance` it is a per-period override; on a `callup` it lands on the source. `replace: true` (with `branch.id`) wipes the branch's rows before writing; `replace_scope: 'import'` wipes only this source's own rows; `merge: true` upserts cell by cell; `dry_run: true` returns the impact without persisting (`purged_periods`, `overridden_items`, `validation_errors_new`, `suggested_replace_source`). Returns counts, `warnings` and, on the file path, `skipped`, `opening_entries`, `rules_copied`, `file_structure`. Persists one version labelled with `summary`.",
+      "description": "Writes values onto a branch of the model, creating the branch when `branch.id` names none (`branch.display_name` required then). Two sources, mutually exclusive: `entries[]` (one value per item and period, items resolved by `item_uid` or `item_label`, created as assumptions when absent; `entry_uid` / `entry_label` target one entry of a list-mode item) or `file_id` (an uploaded spreadsheet parsed server-side, rows classified with the source's mapping rules). A new version of a file already imported: `file_id` + `replace_source_id`, nothing else (refreshed in place on the branch it feeds, default included). A first file onto the base: `file_id` + `branch.id: \"default\"` (a new source, own rows only).A new file of a kind the model already has: `file_id` + `rules_from_source_id` (classified with that sibling's rules, copied onto the new source). An entry's `timeline_ref` equals the target item's grain or `constant`; on a `formula` / `balance` it is a per-period override; on a `callup` it lands on the source. `replace: true` (with `branch.id`) wipes the branch's rows before writing; `replace_scope: 'import'` wipes only this source's own rows; `merge: true` upserts cell by cell; `dry_run: true` returns the impact without persisting (`purged_periods`, `overridden_items`, `validation_errors_new`, `suggested_replace_source`). Returns counts, `warnings` and, on the file path, `skipped`, `opening_entries`, `rules_copied`, `file_structure`. Persists one version labelled with `summary`.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -2811,7 +2826,7 @@
     {
       "name": "layerz_update_branch",
       "title": "Create or update branch",
-      "description": "Creates or updates a branch. With `dataset_id`, patches that branch's metadata (`display_name`, `priority`, `source_hint`, `file_name`, `actuals_through`). Without it, the branch named `patch.display_name` is updated when it exists and created otherwise, with no data source and no input rows (values are then written with `layerz_patch { branch_id }`). `priority` is rejected on the default branch. An explicit `actuals_through` pins the real/forecast cutover (`actuals_through_locked: true`: source syncs stop rewriting it); `null` resets it to auto. Returns `{ branch, created }`. Persists one version labelled with `summary`. Not advertised to read-only keys.",
+      "description": "Creates or updates a branch. With `dataset_id`, patches that branch's metadata (`display_name`, `priority`, `source_hint`, `file_name`, `actuals_through`). Without it, the branch named `patch.display_name` is updated when it exists and created otherwise, with no data source and no input rows. `ops` (the `layerz_patch` operations) are applied on the branch in the same call, as `layerz_patch { branch_id }` would: a scenario that changes a value is one call; the result then carries `patch`. `priority` is rejected on the default branch. An explicit `actuals_through` pins the real/forecast cutover (`actuals_through_locked: true`: source syncs stop rewriting it); `null` resets it to auto. Returns `{ branch, created }`. Persists one version labelled with `summary`. Not advertised to read-only keys.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -2862,6 +2877,18 @@
                   }
                 ]
               }
+            }
+          },
+          "ops": {
+            "description": "Operations applied on this branch in the same call, in the `layerz_patch` `ops` format (value writes land as the branch overlay).",
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
             }
           }
         },
@@ -3894,7 +3921,7 @@
     {
       "name": "layerz_get_conventions",
       "title": "Get conventions",
-      "description": "Returns the conventions the tools' values are expressed in: `custom_instructions` (the conventions of a workspace, the standing instructions for AI agents its members share, ≤ 3000 chars, empty string when unset; also delivered in the handshake instructions), `workspace` (`{ id, name, kind }`: the targeted model's workspace when the caller is a member of it, else `workspace_id`, else the personal workspace) and, when a model is targeted, `finance_md` (the model's FINANCE.md: `raw` Markdown, `source`, `spec_version`, parsed `front_matter` with currency / units / sign convention / glossary, `validation_errors`; `null` when the model has none). `include_guide: true` adds `guide`, the modeling guide (session workflow, structure, stock-flow, lists, branches, sources, templates, checks, versions; also the resource `modeling-guide://reference`).",
+      "description": "Returns the conventions the tools' values are expressed in: `custom_instructions` (the conventions of a workspace, the standing instructions for AI agents its members share, ≤ 3000 chars, empty string when unset; also carried as `conventions` by the entry tools on a model), `workspace` (`{ id, name, kind }`: the targeted model's workspace when the caller is a member of it, else `workspace_id`, else the personal workspace) and, when a model is targeted, `finance_md` (the model's FINANCE.md: `raw` Markdown, `source`, `spec_version`, parsed `front_matter` with currency / units / sign convention / glossary, `validation_errors`; `null` when the model has none). `include_guide: true` adds `guide`, the modeling guide (session workflow, structure, stock-flow, lists, branches, sources, templates, checks, versions; also the resource `modeling-guide://reference`); `include_formula_spec: true` adds `formula_spec`, the formula language (functions, lags, list subscripts; also the resource `formula-spec://reference`), for a client that cannot read resources.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -3912,6 +3939,10 @@
           },
           "include_guide": {
             "description": "Also return the modeling guide (Markdown).",
+            "type": "boolean"
+          },
+          "include_formula_spec": {
+            "description": "Also return the formula language reference (Markdown).",
             "type": "boolean"
           }
         },
@@ -3976,7 +4007,7 @@
     {
       "name": "layerz_set_custom_instructions",
       "title": "Set custom instructions",
-      "description": "Replaces the conventions of a workspace (the personal one by default, or `workspace_id`): the standing instructions for AI agents its members share (plain Markdown/text, ≤ 3000 chars; an empty string clears them). They apply across every model of the workspace, on top of each model's FINANCE.md, and are delivered in the handshake instructions of the next session. Any member may write them. No version is persisted. Not advertised to model-scoped or read-only keys.",
+      "description": "Replaces the conventions of a workspace (the personal one by default, or `workspace_id`): the standing instructions for AI agents its members share (plain Markdown/text, ≤ 3000 chars; an empty string clears them). They apply across every model of the workspace, on top of each model's FINANCE.md, and come back as `conventions` in the results of the tools that open a model of the workspace. Any member may write them. No version is persisted. Not advertised to model-scoped or read-only keys.",
       "inputSchema": {
         "type": "object",
         "properties": {
