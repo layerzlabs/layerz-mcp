@@ -3,7 +3,7 @@ name: start
 description: "First steps with Layerz: the first conversation, a workspace with no model yet, \"what can Layerz do\", \"where do I start\", \"import my Excel model\", a fresh connection. Lists the models, offers a template, a few questions or the import of an existing workbook when the account is empty, reads the workspace conventions before the first write, builds a first model in one pass and hands over its link. Use it whenever the Layerz tools are available and no model has been opened yet in the conversation."
 license: MIT
 metadata:
-  layerz_version: "0.6.0"
+  layerz_version: "1.1.0"
   generated_by: "layerzlabs/layerz scripts/build-plugin-skills.ts, from the modeling guide"
 ---
 
@@ -38,7 +38,7 @@ Finance judgement (is the plan credible, what to challenge, what a lender looks 
 
 ## References
 
-From the Layerz modeling guide (version 0.6.0; the whole guide: `layerz_get_conventions { include_guide: true }` or the `modeling-guide://reference` resource):
+From the Layerz modeling guide (version 1.1.0; the whole guide: `layerz_get_conventions { include_guide: true }` or the `modeling-guide://reference` resource):
 
 - [1. Session start](references/01-session-start.md)
 - [9. Templates](references/09-templates.md)

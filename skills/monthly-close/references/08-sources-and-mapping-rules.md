@@ -1,6 +1,6 @@
 # 8. Sources and mapping rules
 
-> Section 8 of the Layerz modeling guide, version 0.6.0, copied verbatim by `scripts/build-plugin-skills.ts`. The formula language is `formula-spec://reference` (inline: `layerz_get_conventions { include_formula_spec: true }`).
+> Section 8 of the Layerz modeling guide, version 1.1.0, copied verbatim by `scripts/build-plugin-skills.ts`. The formula language is `formula-spec://reference` (inline: `layerz_get_conventions { include_formula_spec: true }`).
 
 `layerz_list_integrations` lists every data source (API connectors and file
 imports, plus linked external models with `include_external_refs`). Lines of

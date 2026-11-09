@@ -3,7 +3,7 @@ name: review-and-fix
 description: "Review and fix a Layerz model: a check fails, the balance sheet does not balance, \"the numbers are wrong\", a model is not computable, verify that a refactor changed nothing, compare two versions or an imported model with its source workbook, undo or restore, \"what changed since yesterday\". Reads health by branch, finds the cycle or the typed number, previews a patch before applying it, and uses history, diff and versions to prove or undo a change."
 license: MIT
 metadata:
-  layerz_version: "0.6.0"
+  layerz_version: "1.1.0"
   generated_by: "layerzlabs/layerz scripts/build-plugin-skills.ts, from the modeling guide"
 ---
 
@@ -29,7 +29,7 @@ Finance judgement (is the plan credible, what to challenge, what a lender looks 
 
 ## References
 
-From the Layerz modeling guide (version 0.6.0; the whole guide: `layerz_get_conventions { include_guide: true }` or the `modeling-guide://reference` resource):
+From the Layerz modeling guide (version 1.1.0; the whole guide: `layerz_get_conventions { include_guide: true }` or the `modeling-guide://reference` resource):
 
 - [10. Checks, health and broken DAGs](references/10-checks-health-and-broken-dags.md)
 - [11. Versions](references/11-versions.md)

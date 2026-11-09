@@ -1,6 +1,6 @@
 # 10. Checks, health and broken DAGs
 
-> Section 10 of the Layerz modeling guide, version 0.6.0, copied verbatim by `scripts/build-plugin-skills.ts`. The formula language is `formula-spec://reference` (inline: `layerz_get_conventions { include_formula_spec: true }`).
+> Section 10 of the Layerz modeling guide, version 1.1.0, copied verbatim by `scripts/build-plugin-skills.ts`. The formula language is `formula-spec://reference` (inline: `layerz_get_conventions { include_formula_spec: true }`).
 
 A **check** flags an `assumption` or `formula` as a control (`check: {}`,
 `check: { tolerance: 0.01 }`, `check: null` removes it). The line is judged on

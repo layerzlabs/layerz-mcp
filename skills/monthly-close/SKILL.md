@@ -3,7 +3,7 @@ name: monthly-close
 description: "Monthly close in Layerz: import actuals from a ledger export, FEC, trial balance, bank or accounting export; map accounts to the model lines; resync a source; compare budget and actuals and comment the variances; pin the closed version. \"Close October\", \"import the ledger\", \"map these accounts\", \"budget vs actual\". Walks the upload, dry run, mapping loop and sync in the order the tools expect."
 license: MIT
 metadata:
-  layerz_version: "0.6.0"
+  layerz_version: "1.1.0"
   generated_by: "layerzlabs/layerz scripts/build-plugin-skills.ts, from the modeling guide"
 ---
 
@@ -29,7 +29,7 @@ Credentials for an accounting connector are entered in the web app, never throug
 
 ## References
 
-From the Layerz modeling guide (version 0.6.0; the whole guide: `layerz_get_conventions { include_guide: true }` or the `modeling-guide://reference` resource):
+From the Layerz modeling guide (version 1.1.0; the whole guide: `layerz_get_conventions { include_guide: true }` or the `modeling-guide://reference` resource):
 
 - [7. Branches, scenarios and actuals](references/07-branches-scenarios-and-actuals.md)
 - [8. Sources and mapping rules](references/08-sources-and-mapping-rules.md)

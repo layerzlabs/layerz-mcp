@@ -2,7 +2,7 @@
   "mcpServers": {
     "layerz": {
       "url": "https://layerz.cc/mcp",
-      "headers": { "X-Layerz-Client": "plugin/0.6.0" }
+      "headers": { "X-Layerz-Client": "plugin/1.1.0" }
     }
   }
 }

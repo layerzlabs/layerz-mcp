@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "layerz",
-  "version": "0.6.0",
+  "version": "1.1.0",
   "description": "Financial models your agent builds and edits: items, formulas, dependencies, branches. Five skills (first session, business plan, monthly close, scenarios and cash, review and fix) on top of the hosted Layerz MCP server. Versioned, exported to standard Excel with live formulas.",
   "author": { "name": "Layerz", "email": "contact@layerz.cc", "url": "https://layerz.cc" },
   "homepage": "https://layerz.cc/for-agents",

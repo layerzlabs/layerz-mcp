@@ -1,6 +1,6 @@
 # 1. Session start
 
-> Section 1 of the Layerz modeling guide, version 0.6.0, copied verbatim by `scripts/build-plugin-skills.ts`. The formula language is `formula-spec://reference` (inline: `layerz_get_conventions { include_formula_spec: true }`).
+> Section 1 of the Layerz modeling guide, version 1.1.0, copied verbatim by `scripts/build-plugin-skills.ts`. The formula language is `formula-spec://reference` (inline: `layerz_get_conventions { include_formula_spec: true }`).
 
 1. **Conventions first.** `layerz_get_conventions({ model_id })` returns the
    conventions of the model's workspace (the standing preferences its members
