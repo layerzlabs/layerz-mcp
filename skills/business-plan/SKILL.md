@@ -37,4 +37,4 @@ From the Layerz modeling guide (version 0.6.0; the whole guide: `layerz_get_conv
 - [4. Stock-flow (rolling balances)](references/04-stock-flow-rolling-balances.md)
 - [5. Lists (per-element series)](references/05-lists-per-element-series.md)
 - [6. Values: two regimes](references/06-values-two-regimes.md)
-- [12. Patch examples](references/12-patch-examples.md)
+- [13. Patch examples](references/13-patch-examples.md)

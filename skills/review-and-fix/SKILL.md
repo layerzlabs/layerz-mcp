@@ -1,6 +1,6 @@
 ---
 name: review-and-fix
-description: "Review and fix a Layerz model: a check fails, the balance sheet does not balance, \"the numbers are wrong\", a model is not computable, verify that a refactor changed nothing, compare two versions, undo or restore, \"what changed since yesterday\". Reads health by branch, finds the cycle or the typed number, previews a patch before applying it, and uses history, diff and versions to prove or undo a change."
+description: "Review and fix a Layerz model: a check fails, the balance sheet does not balance, \"the numbers are wrong\", a model is not computable, verify that a refactor changed nothing, compare two versions or an imported model with its source workbook, undo or restore, \"what changed since yesterday\". Reads health by branch, finds the cycle or the typed number, previews a patch before applying it, and uses history, diff and versions to prove or undo a change."
 license: MIT
 metadata:
   layerz_version: "0.6.0"
@@ -21,7 +21,7 @@ A check fails, the balance sheet does not balance, "the numbers are wrong", `com
 2. `computable: false` or `health.status: "unknown"`: `layerz_validate_model` returns the cycle or the broken reference path. Fix the graph before reasoning on any value; every series is zero-filled until then.
 3. A failing check: read the line and its sources (`layerz_dependencies { uid }`), look for the typed number, the wrong sign, the missing callup (a `balance` without callup children stays flat), the formula that sums a stock. Fix with `layerz_patch` (`replace` keeps the UID and the presentation), then read health again.
 4. Before a structural change on a working model: `layerz_patch { dry_run: true, compare_values: true }` previews the cells that move on checks, totals and the `uids` named. A refactor is neutral when nothing moves.
-5. What changed: `layerz_history { model_id, uid }` (one item's changes, or the versions without `uid`) and `layerz_diff { from, to, values: true }` (omit `to` for the live model).
+5. What changed: `layerz_history { model_id, uid }` (one item's changes, or the versions without `uid`) and `layerz_diff { from, to, values: true }` (omit `to` for the live model). On an imported model, `layerz_diff { model_id, source: { set, refs } }` (top level, in place of `from`) compares the live model with its source workbook as Layerz recalculates it: per line, `first_gaps` and `summary.score`; `set` overrides cells (`"Sheet!C6": 0.4`) to compare a scenario.
 6. Undo: `layerz_manage_version { op: "restore", version }` after reading the history and the diff (the live state is backed up first); `op: "pin"` keeps a version past the retention window. A patch retried after a timeout re-applies its `create` ops: read the history first.
 7. Report in words: what was wrong, what was changed, what the checks say now.
 

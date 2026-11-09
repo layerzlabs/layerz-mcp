@@ -1,6 +1,6 @@
 ---
 name: start
-description: "First steps with Layerz: the first conversation, a workspace with no model yet, \"what can Layerz do\", \"where do I start\", a fresh connection. Lists the models, offers a template or a few questions when the account is empty, reads the workspace conventions before the first write, builds a first model in one pass and hands over its link. Use it whenever the Layerz tools are available and no model has been opened yet in the conversation."
+description: "First steps with Layerz: the first conversation, a workspace with no model yet, \"what can Layerz do\", \"where do I start\", \"import my Excel model\", a fresh connection. Lists the models, offers a template, a few questions or the import of an existing workbook when the account is empty, reads the workspace conventions before the first write, builds a first model in one pass and hands over its link. Use it whenever the Layerz tools are available and no model has been opened yet in the conversation."
 license: MIT
 metadata:
   layerz_version: "0.6.0"
@@ -21,6 +21,7 @@ First conversation with Layerz, a workspace with no model yet, "what can Layerz 
 2. When `models` is empty, do not stop there. Offer two ways in one sentence:
    - from a template: `layerz_list_templates`, then `layerz_create_model { template_id, timelines }` (a template's `description` is its FINANCE.md, the usage guide);
    - from the business: ask 4 to 6 questions (what the company sells and to whom, how it makes money, stage and size, horizon, who reads the model) and wait for the answers. When the user says to go ahead, build on stated assumptions and list them in the FINANCE.md as open questions.
+   - from an existing workbook: `layerz_create_upload_url`, PUT the file, `layerz_parse_file { file_id }` (its `workbook` says what Layerz recalculates, its scenarios and data tables; `guidance` says how to proceed), then `layerz_create_model { file_id, name }`. The import runs after the answer and its report lands in the model's FINANCE.md; a `409 IMPORT_DECISION_REQUIRED` lists the decisions to ask the user (undated period headers), answered through `anchors`. See the Rebuilding a workbook reference.
 3. `layerz_get_conventions { workspace_id }` before the first write. `custom_instructions` is the workspace Context: what its members expect of a model (depth, structure, presentation, working style). Follow it; it is theirs.
 4. Build in one pass with the `business-plan` skill: `layerz_build_from_blueprint { apply_if_clean: true }`, then `layerz_read { health: true }`, fix every failing check, then `layerz_set_finance_md` and a `glyph` through the `meta` op of `layerz_patch`.
 5. End with the model's `url` and three lines: what was built, the assumptions taken, what is left to decide.
@@ -41,3 +42,4 @@ From the Layerz modeling guide (version 0.6.0; the whole guide: `layerz_get_conv
 
 - [1. Session start](references/01-session-start.md)
 - [9. Templates](references/09-templates.md)
+- [12. Rebuilding a workbook](references/12-rebuilding-a-workbook.md)
