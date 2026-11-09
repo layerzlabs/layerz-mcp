@@ -1,20 +1,41 @@
 #!/usr/bin/env node
 // One version, the server's: `server.json` in the Layerz code repo is the
 // source, published to the official MCP registry as io.github.layerzlabs/layerz.
-// Every directory manifest here mirrors that number. This script fails when
-// the manifests disagree with each other or run behind the registry; it only
-// warns when they are ahead (a publish is pending).
-import { readFileSync } from 'node:fs';
+// Every manifest here mirrors that number, so do the skills (their
+// `metadata.layerz_version`) and the `X-Layerz-Client` header of the MCP
+// entries. This script fails when they disagree with each other, when the
+// three MCP entries point at different URLs, or when the manifests run behind
+// the registry; it only warns when they are ahead (a publish is pending).
+import { readFileSync, readdirSync } from 'node:fs';
 
 const NAME = 'io.github.layerzlabs/layerz';
-const MANIFESTS = ['lhm.plugin.json', '.cursor-plugin/plugin.json'];
+const MANIFESTS = ['plugin.json', '.claude-plugin/plugin.json', '.cursor-plugin/plugin.json', 'lhm.plugin.json'];
+const MCP_FILES = ['mcp.json', '.mcp.json', '.cursor-plugin/mcp.json'];
+const URL = 'https://layerz.cc/mcp';
 
-const local = MANIFESTS.map((file) => [file, JSON.parse(readFileSync(file, 'utf8')).version]);
-for (const [file, version] of local) console.log(`${file}: ${version}`);
+const json = (file) => JSON.parse(readFileSync(file, 'utf8'));
+const found = new Map();
+for (const file of MANIFESTS) found.set(file, json(file).version);
+for (const file of MCP_FILES) {
+  const server = json(file).mcpServers?.layerz;
+  if (server?.url !== URL) {
+    console.error(`✗ ${file}: the layerz entry must point at ${URL}`);
+    process.exit(1);
+  }
+  const via = server.headers?.['X-Layerz-Client'] ?? '';
+  found.set(file, via.replace(/^plugin\//, '') || '(no X-Layerz-Client header)');
+}
+for (const dir of readdirSync('skills', { withFileTypes: true })) {
+  if (!dir.isDirectory()) continue;
+  const md = readFileSync(`skills/${dir.name}/SKILL.md`, 'utf8');
+  const m = /^\s*layerz_version: "([^"]+)"/m.exec(md);
+  found.set(`skills/${dir.name}`, m?.[1] ?? '(no layerz_version)');
+}
+for (const [file, version] of found) console.log(`${file}: ${version}`);
 
-const versions = new Set(local.map(([, v]) => v));
+const versions = new Set(found.values());
 if (versions.size !== 1) {
-  console.error('✗ the manifests disagree; set them all to the server version');
+  console.error('✗ the manifests, MCP entries and skills disagree; set them all to the server version');
   process.exit(1);
 }
 const [mirrored] = versions;
@@ -28,7 +49,7 @@ try {
   registry = servers.find((s) => s._meta?.['io.modelcontextprotocol.registry/official']?.isLatest)
     ?.server?.version;
 } catch (error) {
-  console.warn(`! registry unreachable (${error.message}); checked the manifests only`);
+  console.warn(`! registry unreachable (${error.message}); checked the local files only`);
   process.exit(0);
 }
 console.log(`registry (${NAME}, latest): ${registry ?? 'not found'}`);

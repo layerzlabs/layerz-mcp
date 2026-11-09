@@ -1,7 +1,7 @@
 {
   "identifier": "layerzlabs-layerz",
   "name": "Layerz",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "author": "Layerz",
   "authorUrl": "https://github.com/layerzlabs",
   "homepage": "https://layerz.cc/for-agents",
@@ -74,11 +74,12 @@
     {
       "name": "layerz_create_model",
       "title": "Create model",
-      "description": "Creates a model and returns its detail with its UUID, in `workspace_id` (a workspace the caller belongs to; default the personal one) where every member of that workspace edits it. `template_id` copies a template (official, or from the library of a workspace the caller belongs to) into the new model with its sources, staged transactions and mapping rules under fresh ids (connector credentials excluded); the template itself is unchanged. `timelines` sets the grains and bounds (only the grains given: `{ monthly }` alone gives a monthly-only model; on a template, the bounds), `glyph` its emblem (a kebab-case Lucide icon name, e.g. SaaS `trending-up`, banking `landmark`, real estate `house`, coffee shop `coffee`, energy `wind`, HR `users`, valuation `scale`, treasury `wallet`). `conventions` carries the conventions of the workspace it lands in and its FINANCE.md (as in `layerz_get_conventions`) when either is set. Rejected past the plan model cap. Not advertised to model-scoped or read-only keys.",
+      "description": "Creates a model and returns its detail with its UUID, in `workspace_id` (a workspace the caller belongs to; default the personal one) where every member of that workspace edits it. `template_id` copies a template (official, or from the library of a workspace the caller belongs to) into the new model with its sources, staged transactions and mapping rules under fresh ids (connector credentials excluded); the template itself is unchanged. `timelines` sets the grains and bounds (only the grains given: `{ monthly }` alone gives a monthly-only model; on a template, the bounds), `glyph` its emblem (a kebab-case Lucide icon name, e.g. `trending-up`, `landmark`, `house`, `coffee`, `wallet`). `file_id` imports an uploaded workbook instead (deterministic compiler, no AI) and returns `{ model_id, name, status: \"importing\" }` with `guidance` (the rebuild method) at once: the import runs after the response (about a minute for a large workbook), then its report (fidelity by scenario, residue, constructions map) lands in the model FINANCE.md (`has_finance_md`); a failed import deletes the model. The workbook stays with the model for `layerz_diff { source }`. Undated period headers return `IMPORT_DECISION_REQUIRED` with the axes to anchor (`anchors`). `conventions` carries the conventions of the workspace it lands in and its FINANCE.md (as in `layerz_get_conventions`) when either is set. Rejected past the plan model cap. Not advertised to model-scoped or read-only keys.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "name": {
+            "description": "Model name. Required without `file_id`; an imported workbook names the model after its file.",
             "type": "string",
             "minLength": 1,
             "maxLength": 100
@@ -97,6 +98,32 @@
             "type": "string",
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "file_id": {
+            "description": "An uploaded workbook (`layerz_create_upload_url`) the model is imported from by the deterministic compiler: live formulas, values where a formula has no equivalent, and the import report (`import`: fidelity, residue, recalculation coverage, constructions map). Exclusive with `template_id`.",
+            "type": "string",
+            "pattern": "^f_[a-f0-9]{16}$"
+          },
+          "anchors": {
+            "description": "With `file_id`: the first period (`2026`, `2026-01`, `2026-Q1`) of each sheet whose period headers carry no date, as listed by an `IMPORT_DECISION_REQUIRED` error; `[]` leaves those sheets out.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sheet": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "start": {
+                  "type": "string",
+                  "minLength": 4
+                }
+              },
+              "required": [
+                "sheet",
+                "start"
+              ]
+            }
           },
           "workspace_id": {
             "description": "Workspace the model is created in (one the caller belongs to; `layerz_list_models` lists them). Default: the personal workspace.",
@@ -161,9 +188,6 @@
             }
           }
         },
-        "required": [
-          "name"
-        ],
         "$schema": "http://json-schema.org/draft-07/schema#"
       },
       "annotations": {
@@ -209,7 +233,7 @@
     {
       "name": "layerz_read",
       "title": "Read model snapshot",
-      "description": "Returns a UID-native snapshot of a model: `model` (name, timelines, lists, branches), `items` (flat, `parent_uid` carries the hierarchy, each with role, formula, check, note; values are the base plan) and `revision_id` / `version_number`. Filters: `uids`, `roles`, `include_children`. `with_values: true` adds the computed series `v` aligned with the periods `p` (`periods` for explicit labels of mixed grains, else `granularity`), `variance` adds `vv`, `per_element` adds `ve` for list-mode items, `health` adds the check report, `branch_id` computes `v` and `health` under one branch's `[base, branch]` checkout, else they are the base plan. The check report is judged on a branch checkout: without `branch_id`, a multi-branch model reports the branch it opens on (`health.branch_id`) and every branch under `health.by_branch`. When the response leads with `computable: false`, `errors[]` names the broken dependencies (e.g. `CIRCULAR_DEPENDENCY`) and every series is a zero-filled placeholder. A read without `uids` or `roles` also carries `conventions` (workspace conventions + model FINANCE.md, as in `layerz_get_conventions`) when either is set.",
+      "description": "Returns a UID-native snapshot of a model: `model` (name, timelines, lists, branches), `items` (flat, `parent_uid` carries the hierarchy, each with role, formula, check, note; values are the base plan) and `revision_id` / `version_number`. Filters: `uids`, `roles`, `include_children`. `with_values: true` adds the computed series `v` aligned with the periods `p` (`periods` for explicit labels of mixed grains, else `granularity`), `variance` adds `vv`, `per_element` adds `ve` for list-mode items, `health` adds the check report, `branch_id` computes `v` and `health` under one branch's `[base, branch]` checkout, else they are the base plan. The check report is judged on a branch checkout: without `branch_id`, a multi-branch model reports the branch it opens on (`health.branch_id`) and every branch under `health.by_branch`. When the response leads with `computable: false`, `errors[]` names the broken dependencies (e.g. `CIRCULAR_DEPENDENCY`) and every series is a zero-filled placeholder. A read without `uids` or `roles` also carries `conventions` (workspace conventions + model FINANCE.md, as in `layerz_get_conventions`) when either is set, and `guidance` (the rebuild method of the modeling guide § 12) on a model of 1000 items or more.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -220,7 +244,7 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
           "uids": {
-            "description": "Filter by item UIDs",
+            "description": "Filter by items: UIDs or names",
             "maxItems": 50,
             "type": "array",
             "items": {
@@ -264,7 +288,7 @@
             }
           },
           "granularity": {
-            "description": "Grain for `v`/`p` when no explicit `periods` are given. 'native' = finest active dated grain (monthly>quarterly>yearly). Default: 'yearly'. Ignored when `periods` are provided (each label resolves its own grain).",
+            "description": "Grain for `v`/`p` when no explicit `periods` are given, among the active timelines (another one: `GRANULARITY_UNAVAILABLE`). 'native' = finest active dated grain (monthly>quarterly>yearly). Default: 'yearly' when the model has it, else 'native'. Ignored when `periods` are provided (each label resolves its own grain).",
             "type": "string",
             "enum": [
               "monthly",
@@ -384,7 +408,7 @@
     {
       "name": "layerz_patch",
       "title": "Apply model patch",
-      "description": "Applies a batch of mutations to a model: `create`, `replace`, `update`, `delete`, `move`, `list_create`, `list_update`, `list_delete` and `meta` (name, subtitle, finance_md, timelines, formats, number_locale, default_branch, glyph). The batch is all-or-nothing: a validation failure persists nothing and returns every error at once (`MODEL_VALIDATION_ERROR`, `details[]`). A `create` may carry a temp `id` later ops reference (`parent`, `source`, `target`, `series`, `liste_ref`, `after`, `$_id` in a formula); `map` gives each temp id its UID. `replace` keeps the item's UID and presentation fields; `update` is a strict partial merge of the named fields. Root accepts `section` and `dashboard`; `dashboard` accepts widgets only; a `formula` with both an expression and children is rejected (`FORMULA_EXPR_AND_CHILDREN`); a list-mode item takes `timeline_values`, a non-list item `value` / `values` (a sparse period-keyed `timeline_values` map merges into `values`). `branch_id` routes the value writes onto that branch as an overlay of the cells differing from the base, with no data source; `compute` returns the computed series of the given UIDs (under `compute_branch`, default `branch_id`); `dry_run` validates and computes without persisting; `compare_values` adds `value_diff`, the numbers the batch moved (the `layerz_diff` values report). Persists one version labelled with `summary`. Not advertised to read-only keys. Modeling patterns and examples: resource `modeling-guide://reference`.",
+      "description": "Applies a batch of mutations to a model: `create`, `replace`, `update`, `delete`, `move`, `list_create`, `list_update`, `list_delete` and `meta` (name, subtitle, finance_md, timelines, formats, number_locale, default_branch, glyph). The batch is all-or-nothing: a validation failure persists nothing and returns every error at once (`MODEL_VALIDATION_ERROR`, `details[]`). A `create` may carry a temp `id` later ops reference (`parent`, `source`, `target`, `series`, `liste_ref`, `after`, `before`, `$_id` in a formula); `map` gives each temp id its UID. `replace` keeps the item's UID and presentation fields; `update` is a strict partial merge of the named fields. `after` / `before` (`create`, `move`, list ops) order siblings and tabs; `unchanged: true`: nothing written. Root accepts `section` and `dashboard`; `dashboard` accepts widgets only; a `formula` with both an expression and children is rejected (`FORMULA_EXPR_AND_CHILDREN`); a list-mode item takes `timeline_values`, a non-list item `value` / `values`. `branch_id` routes the value writes onto that branch as an overlay of the cells differing from the base; `compute` returns the computed series of the given UIDs (under `compute_branch`, default `branch_id`); `dry_run` validates and computes without persisting; `compare_values` adds `value_diff` (as in `layerz_diff`). Persists one version labelled with `summary`. Not advertised to read-only keys. Modeling patterns and examples: resource `modeling-guide://reference`.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -417,7 +441,7 @@
                     "uid": {
                       "type": "string",
                       "minLength": 1,
-                      "description": "Existing item UID to update"
+                      "description": "Item to update: UID, temp id or name"
                     },
                     "name": {
                       "description": "New display label (also the formula identifier)",
@@ -477,7 +501,7 @@
                       "maxLength": 2000
                     },
                     "inputs": {
-                      "description": "Inputs override of a `formula` item (item UIDs or same-batch temp ids), derived from the expression when omitted. Ignored on every other role: a `balance` takes its flows from its children, an aggregator sums them.",
+                      "description": "Inputs override of a `formula` item (item UIDs, names or same-batch temp ids), derived from the expression when omitted. Ignored on every other role: a `balance` takes its flows from its children, an aggregator sums them.",
                       "type": "array",
                       "items": {
                         "type": "string",
@@ -1039,7 +1063,7 @@
                       "type": "boolean"
                     },
                     "inputs": {
-                      "description": "Inputs override of a `formula` item (item UIDs or same-batch temp ids), derived from the expression when omitted. Ignored on every other role: a `balance` takes its flows from its children, an aggregator sums them.",
+                      "description": "Inputs override of a `formula` item (item UIDs, names or same-batch temp ids), derived from the expression when omitted. Ignored on every other role: a `balance` takes its flows from its children, an aggregator sums them.",
                       "type": "array",
                       "items": {
                         "type": "string",
@@ -1491,6 +1515,16 @@
                       "description": "Parent container: either an 8-char UID of an existing section/balance/dashboard, or a temp `id` from an earlier create op in the same batch (e.g. set `id: \"_pl\"` on a section create, then `parent: \"_pl\"` on each child item).",
                       "type": "string",
                       "minLength": 1
+                    },
+                    "after": {
+                      "description": "Place right after a sibling (UID, temp id or name): a child of the same parent or, at the root, a tab of the same group (dashboard tabs come first, then section tabs). Exclusive with `before`.",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "before": {
+                      "description": "Place right before a sibling (UID, temp id or name): a child of the same parent or, at the root, a tab of the same group (dashboard tabs come first, then section tabs); before the first one puts it first. Exclusive with `after`.",
+                      "type": "string",
+                      "minLength": 1
                     }
                   },
                   "required": [
@@ -1509,7 +1543,7 @@
                     "from_uid": {
                       "type": "string",
                       "minLength": 1,
-                      "description": "Existing item UID to replace atomically (section/dashboard unsupported)"
+                      "description": "Item to replace atomically: UID, temp id or name (section/dashboard unsupported)"
                     },
                     "new_item": {
                       "type": "object",
@@ -1580,7 +1614,7 @@
                           "type": "boolean"
                         },
                         "inputs": {
-                          "description": "Inputs override of a `formula` item (item UIDs or same-batch temp ids), derived from the expression when omitted. Ignored on every other role: a `balance` takes its flows from its children, an aggregator sums them.",
+                          "description": "Inputs override of a `formula` item (item UIDs, names or same-batch temp ids), derived from the expression when omitted. Ignored on every other role: a `balance` takes its flows from its children, an aggregator sums them.",
                           "type": "array",
                           "items": {
                             "type": "string",
@@ -2055,7 +2089,7 @@
                     "uid": {
                       "type": "string",
                       "minLength": 1,
-                      "description": "UID of item to delete"
+                      "description": "Item to delete: UID, temp id or name"
                     }
                   },
                   "required": [
@@ -2073,15 +2107,27 @@
                     "uid": {
                       "type": "string",
                       "minLength": 1,
-                      "description": "UID of item to move"
+                      "description": "Item to move: UID, temp id or name"
                     },
                     "parent": {
-                      "description": "New parent UID",
+                      "description": "New parent UID; `null` = to the root (a section or dashboard tab). Omitted = same parent.",
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "after": {
+                      "description": "Place right after a sibling (UID, temp id or name): a child of the same parent or, at the root, a tab of the same group (dashboard tabs come first, then section tabs). Exclusive with `before`.",
                       "type": "string",
                       "minLength": 1
                     },
-                    "after": {
-                      "description": "UID of item to place after (for ordering)",
+                    "before": {
+                      "description": "Place right before a sibling (UID, temp id or name): a child of the same parent or, at the root, a tab of the same group (dashboard tabs come first, then section tabs); before the first one puts it first. Exclusive with `after`.",
                       "type": "string",
                       "minLength": 1
                     }
@@ -2146,6 +2192,16 @@
                           "label"
                         ]
                       }
+                    },
+                    "after": {
+                      "description": "Place right after another list tab (UID, temp id or name). Exclusive with `before`.",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "before": {
+                      "description": "Place right before another list tab (UID, temp id or name); before the first one puts it first. Exclusive with `after`.",
+                      "type": "string",
+                      "minLength": 1
                     }
                   },
                   "required": [
@@ -2206,6 +2262,16 @@
                           "label"
                         ]
                       }
+                    },
+                    "after": {
+                      "description": "Place right after another list tab (UID, temp id or name). Exclusive with `before`.",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "before": {
+                      "description": "Place right before another list tab (UID, temp id or name); before the first one puts it first. Exclusive with `after`.",
+                      "type": "string",
+                      "minLength": 1
                     }
                   },
                   "required": [
@@ -3527,7 +3593,7 @@
     {
       "name": "layerz_parse_file",
       "title": "Parse uploaded file",
-      "description": "Parses an uploaded Excel/CSV (`file_id`) deterministically and returns a token-optimized structure: sheet summaries (without `sheet_name`) or, for one sheet, the detected timeline, `suggested_structure` (layout, header row, columns), row labels and column headers with samples. A wide sheet is recognised by its period header: a run of at least three consecutive periods (bare years such as `2026`, `YYYY-MM`, `Jan 2026`, `Q1 2026`, date cells) in any column, reported as `detected_periods` and `period_range`. A raw DATEV EXTF export and a French FEC (compact `YYYYMMDD` dates) are detected natively; on any columnar ledger a journal column of short codes is mapped as `category_column`, and its opening journal (`AN`, `RAN`, `ANO`, `AD`, or a journal labelled \"à nouveau\") is read as opening entries (`opening_rows`; prior-year rows moved into the first month) — remap or ignore that column to change it. `structure_override` re-parses with corrected columns when a ledger is misdetected (a Débit column taken as the value, an account-code column taken as the label) or when a wide sheet has fewer than three period columns (`layout: \"wide\"`). The raw binary is not returned.",
+      "description": "Parses an uploaded Excel/CSV (`file_id`) deterministically and returns a token-optimized structure: sheet summaries (without `sheet_name`) or, for one sheet, the detected timeline, `suggested_structure` (layout, header row, columns), row labels and column headers with samples. A wide sheet is recognised by its period header: a run of at least three consecutive periods (bare years such as `2026`, `YYYY-MM`, `Jan 2026`, `Q1 2026`, date cells) in any column, reported as `detected_periods` and `period_range`. A raw DATEV EXTF export and a French FEC (compact `YYYYMMDD` dates) are detected natively; on any columnar ledger a journal column of short codes is mapped as `category_column`, and its opening journal (`AN`, `RAN`, `ANO`, `AD`, or a journal labelled \"à nouveau\") is read as opening entries (`opening_rows`; prior-year rows moved into the first month) — remap or ignore that column to change it. `structure_override` re-parses with corrected columns when a ledger is misdetected (a Débit column taken as the value, an account-code column taken as the label) or when a wide sheet has fewer than three period columns (`layout: \"wide\"`). Without `sheet_name`, a model workbook (formulas under period headers) also returns `workbook` (how far the Excel engine recalculates it, its scenario selectors with their scenarios, its data tables) and `guidance`. The raw binary is not returned.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -4081,7 +4147,7 @@
     {
       "name": "layerz_diff",
       "title": "Diff two versions",
-      "description": "Returns the semantic diff between two revisions of a model: `{ from, to, diff: { items: [{ uid, displayName, status, fields? }], branches: [{ id, display_name, status?, items }], metadata: [...], summary: { added, removed, modified, branches } } }`. `items` compares the base plan; `branches` lists, per branch, the overlay cells it records over the base (`value` / `values` / `timeline_values`, `null` where the base shows through) — a write under `branch_id` or an import on a branch appears there, not as a base change. `from` and `to` each take exactly one of `revision_id`, `version_number` or `id`; without `to`, the diff runs against the live model. `sources` carries the delta of the source settings and bindings (`sources[] { id, display_name, status, fields[] }`) and of the mapping rules (`rules { added, removed, changed }`), present when both endpoints carry that state. `values: true` adds `values`, the computed-values diff: `{ granularity, scope, tolerance, computable, items: [{ uid, display_name, status?, changed, cells: [{ period, before, after, delta }] }], summary: { items_compared, items_changed, cells_changed, max_abs_delta, truncated } }` — the periods whose value moved beyond `tolerance`, on the lines `uids` names, else the key lines (checks and totals), else every value line; computed on the base plan or under `branch_id`, at `granularity`. `computable: false` with `errors` per endpoint when a revision cannot be evaluated.",
+      "description": "Returns the semantic diff between two revisions of a model: `{ from, to, diff: { items: [{ uid, displayName, status, fields? }], branches: [{ id, display_name, status?, items }], metadata: [...], summary: { added, removed, modified, branches } } }`. `items` compares the base plan; `branches` lists, per branch, the overlay cells it records over the base (`null` where the base shows through): a write under `branch_id` or an import on a branch appears there, not as a base change. `from` and `to` each take exactly one of `revision_id`, `version_number` or `id`; without `to`, the diff runs against the live model. `sources` carries the delta of the source settings and bindings (`sources[] { id, display_name, status, fields[] }`) and of the mapping rules (`rules { added, removed, changed }`), present when both endpoints carry that state. `values: true` adds `values`, the computed-values diff: `{ granularity, scope, tolerance, computable, items: [{ uid, display_name, status?, changed, cells: [{ period, before, after, delta }] }], summary: { items_compared, items_changed, cells_changed, max_abs_delta, truncated } }` — the periods whose value moved beyond `tolerance`, on the lines `uids` names, else the key lines (checks, totals), else every value line; computed on the base plan or under `branch_id`, at `granularity`. `computable: false` with `errors` per endpoint when a revision cannot be computed. `source` (in place of `from`): the live model against its source workbook recalculated.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -4092,6 +4158,7 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
           "from": {
+            "description": "Older endpoint: exactly one of revision_id / version_number / id. Required unless `source`.",
             "type": "object",
             "properties": {
               "revision_id": {
@@ -4111,8 +4178,47 @@
                 "format": "uuid",
                 "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
               }
-            },
-            "description": "Older endpoint: exactly one of revision_id / version_number / id."
+            }
+          },
+          "source": {
+            "description": "Compares the live model (base plan or `branch_id`) with the workbook it was imported from, recalculated by the Excel engine with the cells of `set` overridden (a scenario; none = as saved). Lines: the ones the import linked to their cells, `uids` restricts them, `refs` links rebuilt ones. Each listed line (gaps only, 50 at most, largest first) carries `cells`, `compared`, `off` and `first_gaps: [{ period, source, model, delta }]`; `summary` counts every line (`score`: the share of cells reproduced, `lines_compared`, `lines_matching`, `cells_compared`, `cells_off`, `max_abs_delta`); `unlinked` names the asked uids with no source cells.",
+            "type": "object",
+            "properties": {
+              "set": {
+                "description": "Workbook cells overridden before the recalculation (`Sheet!D16` → value).",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "minLength": 2
+                },
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ]
+                }
+              },
+              "refs": {
+                "description": "Source range of a rebuilt line: uid → `Sheet!E12:BK12` (a row range for time on columns, a column range for time on rows; the sheet header aligns it with the periods).",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                "additionalProperties": {
+                  "type": "string",
+                  "minLength": 2
+                }
+              }
+            }
           },
           "to": {
             "description": "Newer endpoint; omitted = the current live model.",
@@ -4142,7 +4248,7 @@
             "type": "boolean"
           },
           "uids": {
-            "description": "With `values`: the lines compared (default: checks and totals).",
+            "description": "With `values`: the lines compared (default: checks and totals). With `source`: the lines compared (default: every linked line).",
             "maxItems": 200,
             "type": "array",
             "items": {
@@ -4152,7 +4258,7 @@
             }
           },
           "branch_id": {
-            "description": "With `values`: the branch whose `[base, branch]` checkout both revisions are computed under; absent = the base plan.",
+            "description": "With `values`: the branch whose `[base, branch]` checkout both revisions are computed under; with `source`: the branch the model is computed on. Absent = the base plan.",
             "type": "string",
             "minLength": 1
           },
@@ -4167,14 +4273,11 @@
             ]
           },
           "tolerance": {
-            "description": "With `values`: absolute difference above which a cell counts as changed (default 0.01).",
+            "description": "With `values` or `source`: absolute difference above which a cell counts as changed (default 0.01).",
             "type": "number",
             "minimum": 0
           }
         },
-        "required": [
-          "from"
-        ],
         "$schema": "http://json-schema.org/draft-07/schema#"
       },
       "annotations": {

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "layerz",
+  "version": "0.6.0",
+  "description": "Financial models your agent builds and edits: items, formulas, dependencies, branches. Five skills (first session, business plan, monthly close, scenarios and cash, review and fix) on top of the hosted Layerz MCP server. Versioned, exported to standard Excel with live formulas.",
+  "author": { "name": "Layerz", "email": "contact@layerz.cc", "url": "https://layerz.cc" },
+  "homepage": "https://layerz.cc/for-agents",
+  "repository": "https://github.com/layerzlabs/layerz-mcp",
+  "license": "MIT",
+  "keywords": ["finance", "financial-modeling", "excel", "fpa", "spreadsheet", "budget", "forecast", "cfo"],
+  "extensions": {
+    "com.openai": {
+      "onboardingSkill": "./skills/start/SKILL.md",
+      "interface": {
+        "displayName": "Layerz",
+        "shortDescription": "Financial models your agent builds and edits, exported to Excel.",
+        "longDescription": "Layerz is a structured spreadsheet for financial models, ready for AI. The agent works on the model structure itself (items, formulas with named references, the dependency graph, timelines, scenario and actuals branches), not on loose cells, so formulas hold when an assumption changes and the model is still there next session. Every change is versioned with a readable summary; Excel is an export with live formulas. The plugin bundles the hosted MCP server with five skills: first session, business plan, monthly close, scenarios and cash, review and fix.",
+        "developerName": "Layerz",
+        "category": "Productivity",
+        "capabilities": ["Read", "Write"],
+        "websiteURL": "https://layerz.cc",
+        "privacyPolicyURL": "https://layerz.cc/privacy",
+        "termsOfServiceURL": "https://layerz.cc/terms",
+        "defaultPrompt": [
+          "Build a three-statement model for a B2B SaaS company: 2 M€ ARR, 40 % growth, 18-month runway. Ask me what you need to know first.",
+          "Import this month's ledger export into my model and comment the variances against budget.",
+          "Add a downside scenario where the Series A slips by six months and show the runway."
+        ],
+        "logo": "./assets/logo.svg"
+      }
+    }
+  }
+}

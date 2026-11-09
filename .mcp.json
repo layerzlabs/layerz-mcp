@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "layerz": {
+      "type": "http",
+      "url": "https://layerz.cc/mcp",
+      "headers": { "X-Layerz-Client": "plugin/0.6.0" }
+    }
+  }
+}

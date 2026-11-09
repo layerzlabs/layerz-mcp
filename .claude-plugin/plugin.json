@@ -1,0 +1,15 @@
+{
+  "name": "layerz",
+  "version": "0.6.0",
+  "description": "Financial models your agent builds and edits: items, formulas, dependencies, branches. Five skills (first session, business plan, monthly close, scenarios and cash, review and fix) on top of the hosted Layerz MCP server. Versioned, exported to standard Excel with live formulas.",
+  "author": { "name": "Layerz", "email": "contact@layerz.cc", "url": "https://layerz.cc" },
+  "homepage": "https://layerz.cc/for-agents",
+  "repository": "https://github.com/layerzlabs/layerz-mcp",
+  "license": "MIT",
+  "keywords": ["finance", "financial-modeling", "excel", "fpa", "spreadsheet", "budget", "forecast", "cfo"],
+  "icon": "https://layerz.cc/icon.png",
+  "documentationUrl": "https://layerz.cc/for-agents",
+  "supportUrl": "https://github.com/layerzlabs/layerz-mcp/issues",
+  "privacyPolicyUrl": "https://layerz.cc/privacy",
+  "termsOfServiceUrl": "https://layerz.cc/terms"
+}
