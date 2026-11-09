@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "layerzlabs",
+  "description": "Plugins by Layerz: financial models your agent builds and edits.",
+  "owner": { "name": "Layerz", "email": "contact@layerz.cc", "url": "https://layerz.cc" },
+  "plugins": [
+    {
+      "name": "layerz",
+      "source": "./",
+      "description": "The hosted Layerz MCP server plus five skills: first session, business plan, monthly close, scenarios and cash, review and fix.",
+      "category": "productivity",
+      "homepage": "https://layerz.cc/for-agents"
+    }
+  ]
+}
