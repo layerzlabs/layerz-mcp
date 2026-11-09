@@ -3,8 +3,7 @@
   "mcpServers": {
     "layerz": {
       "type": "streamable-http",
-      "url": "https://layerz.cc/mcp",
-      "headers": { "X-Layerz-Client": "plugin/1.1.0" }
+      "url": "https://layerz.cc/mcp"
     }
   }
 }

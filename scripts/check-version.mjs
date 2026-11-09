@@ -3,7 +3,8 @@
 // source, published to the official MCP registry as io.github.layerzlabs/layerz.
 // Every manifest here mirrors that number, so do the skills (their
 // `metadata.layerz_version`) and the `X-Layerz-Client` header of the MCP
-// entries. This script fails when they disagree with each other, when the
+// entries (`.mcp.json` for Claude, `.cursor-plugin/mcp.json`; the Agent Plugins
+// `mcp.json` read by OpenAI carries none). This script fails when they disagree with each other, when the
 // three MCP entries point at different URLs, or when the manifests run behind
 // the registry; it only warns when they are ahead (a publish is pending).
 import { readFileSync, readdirSync } from 'node:fs';
@@ -21,6 +22,15 @@ for (const file of MCP_FILES) {
   if (server?.url !== URL) {
     console.error(`✗ ${file}: the layerz entry must point at ${URL}`);
     process.exit(1);
+  }
+  // The Agent Plugins `mcp.json` carries no header: OpenAI's public
+  // submission rejects a server with non-empty `headers`.
+  if (file === 'mcp.json') {
+    if (server.headers && Object.keys(server.headers).length > 0) {
+      console.error('✗ mcp.json: no headers (OpenAI public submission rejects them)');
+      process.exit(1);
+    }
+    continue;
   }
   const via = server.headers?.['X-Layerz-Client'] ?? '';
   found.set(file, via.replace(/^plugin\//, '') || '(no X-Layerz-Client header)');
