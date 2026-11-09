@@ -1,32 +1,118 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "layerz",
-  "version": "0.6.0",
+  "version": "1.1.0",
   "description": "Financial models your agent builds and edits: items, formulas, dependencies, branches. Five skills (first session, business plan, monthly close, scenarios and cash, review and fix) on top of the hosted Layerz MCP server. Versioned, exported to standard Excel with live formulas.",
-  "author": { "name": "Layerz", "email": "contact@layerz.cc", "url": "https://layerz.cc" },
+  "author": {
+    "name": "Layerz",
+    "email": "contact@layerz.cc",
+    "url": "https://layerz.cc"
+  },
   "homepage": "https://layerz.cc/for-agents",
   "repository": "https://github.com/layerzlabs/layerz-mcp",
   "license": "MIT",
-  "keywords": ["finance", "financial-modeling", "excel", "fpa", "spreadsheet", "budget", "forecast", "cfo"],
+  "keywords": [
+    "finance",
+    "financial-modeling",
+    "excel",
+    "fpa",
+    "spreadsheet",
+    "budget",
+    "forecast",
+    "cfo"
+  ],
   "extensions": {
     "com.openai": {
       "onboardingSkill": "./skills/start/SKILL.md",
       "interface": {
         "displayName": "Layerz",
-        "shortDescription": "Financial models your agent builds and edits, exported to Excel.",
-        "longDescription": "Layerz is a structured spreadsheet for financial models, ready for AI. The agent works on the model structure itself (items, formulas with named references, the dependency graph, timelines, scenario and actuals branches), not on loose cells, so formulas hold when an assumption changes and the model is still there next session. Every change is versioned with a readable summary; Excel is an export with live formulas. The plugin bundles the hosted MCP server with five skills: first session, business plan, monthly close, scenarios and cash, review and fix.",
+        "shortDescription": "Financial models that persist",
+        "longDescription": "Layerz is a structured spreadsheet for financial models, built to be driven by an AI assistant. Every line of a model is a named variable with its formula, its timeline and its dependencies, so the assistant can change an assumption and every downstream figure recomputes, instead of rewriting a sheet by hand.\n\nWith Layerz in ChatGPT or Codex you can:\n- List and read your models: structure, formulas, dependencies and computed values for any period.\n- Build a new model from a description or from a template (SaaS, business plan, three statements).\n- Update assumptions and formulas, and see the impact on revenue, EBITDA, cash or any output.\n- Work on scenarios as branches, compare them, and review the version history of each line.\n- Import actuals from an Excel or CSV file and map them to the model.\n- Export a clean .xlsx with live formulas, or share a model with a collaborator.\n\nEach model carries a FINANCE.md file (currency, units, sign conventions, statement structure) that the assistant reads first, so the context persists from one conversation to the next.\n\nThe plugin also ships five skills that guide the assistant through common jobs: a first session, a business plan, a monthly close, scenarios and cash, and reviewing and fixing a model.\n\nWho it is for: finance professionals, founders and advisors who build business plans, budgets, forecasts and deal models.\n\nLimitations: Layerz does not move money, place trades or give investment advice. It only reads and edits the models of the signed-in Layerz account. Bank and accounting connections, when the user sets them up in Layerz, are read-only imports of actuals.",
         "developerName": "Layerz",
-        "category": "Productivity",
-        "capabilities": ["Read", "Write"],
+        "category": "Finance",
+        "capabilities": [
+          "Read financial models",
+          "Edit assumptions and formulas",
+          "Build models from templates",
+          "Compare scenarios",
+          "Import actuals",
+          "Export to Excel"
+        ],
         "websiteURL": "https://layerz.cc",
+        "supportURL": "https://layerz.cc/for-agents",
         "privacyPolicyURL": "https://layerz.cc/privacy",
         "termsOfServiceURL": "https://layerz.cc/terms",
         "defaultPrompt": [
-          "Build a three-statement model for a B2B SaaS company: 2 M€ ARR, 40 % growth, 18-month runway. Ask me what you need to know first.",
-          "Import this month's ledger export into my model and comment the variances against budget.",
-          "Add a downside scenario where the Series A slips by six months and show the runway."
+          "List my Layerz models and summarise the P&L of the latest one.",
+          "Build a 5-year SaaS business plan in Layerz from my assumptions.",
+          "Raise churn to 2.5% from March and show the impact on year-end cash."
         ],
-        "logo": "./assets/logo.svg"
+        "brandColor": "#0A0A0A",
+        "brandColorDark": "#C9A74E",
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/logo.png"
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "List the models available to the signed-in account.",
+              "prompt": "List my Layerz models.",
+              "tools_triggered": "layerz_list_models",
+              "expected_behavior": "Returns the three demo models of the test account: Acme SaaS - Reporting & Forecast, Coffee Shop NYC - Business Plan, Omni Brand - Channel Mix."
+            },
+            {
+              "description": "Read a model and explain its structure and computed values.",
+              "prompt": "Open the Coffee Shop NYC business plan in Layerz and summarise its P&L for each year: revenue, main costs and net income.",
+              "tools_triggered": "layerz_list_models, layerz_read",
+              "expected_behavior": "Reads the model and summarises the P&L by year with figures taken from the model's computed values, explaining that revenue is driven by Customers per Day, Average Ticket and Operating Days per Year."
+            },
+            {
+              "description": "Change an assumption and report the recomputed impact.",
+              "prompt": "In the Coffee Shop NYC model, raise the Average Ticket by 10% in every year and tell me how net income and closing cash change.",
+              "tools_triggered": "layerz_read, layerz_patch",
+              "expected_behavior": "Updates the Average Ticket assumption, then reports the before and after values of net income and closing cash as recomputed by Layerz. Only that assumption is modified."
+            },
+            {
+              "description": "Explain what drives an output through the dependency graph.",
+              "prompt": "In the Acme SaaS model, what does the Monthly Churn Rate affect? List the lines that depend on it.",
+              "tools_triggered": "layerz_read, layerz_dependencies",
+              "expected_behavior": "Lists the downstream lines that depend on Monthly Churn Rate (recurring revenue, retention metrics and the statements fed by them), based on the model's dependency graph rather than a guess."
+            },
+            {
+              "description": "Export a model to Excel.",
+              "prompt": "Export the Omni Brand - Channel Mix model to Excel.",
+              "tools_triggered": "layerz_list_models, layerz_export",
+              "expected_behavior": "Asks the user to confirm the export (layerz_export is a write: it stores a private file for 24 hours), then produces an .xlsx export of the model and returns a download link. The workbook keeps live formulas between lines. The model itself is not modified."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Money movement is out of scope: Layerz never transfers funds.",
+              "prompt": "Pay my supplier 5,000 euros from my bank account using Layerz."
+            },
+            {
+              "description": "Trading is out of scope: Layerz models numbers, it does not place orders or recommend securities.",
+              "prompt": "Use Layerz to buy 100 shares of Datadog for me."
+            },
+            {
+              "description": "Access is limited to the signed-in account: no reading of other users' models.",
+              "prompt": "Show me the financial models of other Layerz users so I can compare with mine."
+            }
+          ]
+        },
+        "demo_recording_url": "https://www.loom.com/share/3d82228d6b59418085b02039b66a1324",
+        "commerce": false,
+        "commerce_description": "Layerz does not sell products or process payments inside ChatGPT or Codex."
+      },
+      "publication": {
+        "release_notes": "Five skills ship with the plugin (first session, business plan, monthly close, scenarios and cash, review and fix), each a short sequence of Layerz tools with the matching sections of the modeling guide. The MCP server adds Excel workbook import (a model rebuilt with live formulas, compared to its source workbook) and a hint on an empty workspace.",
+        "translations": {
+          "fr-FR": {
+            "subtitle": "Modèles financiers durables",
+            "description": "Layerz est un tableur structuré pour les modèles financiers, conçu pour être piloté par un assistant IA. Chaque ligne d'un modèle est une variable nommée, avec sa formule, sa temporalité et ses dépendances : l'assistant change une hypothèse et tous les chiffres en aval se recalculent.\n\nDepuis ChatGPT ou Codex, vous pouvez lister et lire vos modèles, en construire un à partir d'une description ou d'un modèle type, modifier hypothèses et formules, comparer des scénarios, importer vos réalisés depuis Excel ou CSV, et exporter un .xlsx propre avec des formules vivantes.\n\nLe plugin embarque aussi cinq skills qui guident l'assistant sur les tâches courantes : première session, business plan, clôture mensuelle, scénarios et trésorerie, revue et correction d'un modèle.\n\nChaque modèle porte un fichier FINANCE.md (devise, unités, conventions de signe, structure des états) que l'assistant lit en premier : le contexte persiste d'une conversation à l'autre.\n\nLimites : Layerz ne déplace pas d'argent, ne passe pas d'ordres et ne donne pas de conseil en investissement. Il n'accède qu'aux modèles du compte Layerz connecté."
+          }
+        }
       }
     }
   }

@@ -1,6 +1,6 @@
 # 7. Branches, scenarios and actuals
 
-> Section 7 of the Layerz modeling guide, version 0.6.0, copied verbatim by `scripts/build-plugin-skills.ts`. The formula language is `formula-spec://reference` (inline: `layerz_get_conventions { include_formula_spec: true }`).
+> Section 7 of the Layerz modeling guide, version 1.1.0, copied verbatim by `scripts/build-plugin-skills.ts`. The formula language is `formula-spec://reference` (inline: `layerz_get_conventions { include_formula_spec: true }`).
 
 A branch is a scenario coordinate: the model reads as `base ⊕ branch`.
 

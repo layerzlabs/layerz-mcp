@@ -160,7 +160,7 @@ Free for one person working alone: unlimited models, MCP and REST API, Excel and
 
 ## Versioning
 
-One version, the server's. The number published to the [official MCP Registry](https://registry.modelcontextprotocol.io) (`io.github.layerzlabs/layerz`, from the `server.json` of the Layerz code repo) is the only version; `plugin.json`, `.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`, `lhm.plugin.json`, the `X-Layerz-Client` header of the three MCP entries and the `layerz_version` of every skill mirror it, never one of their own. A change to this repository alone (a skill reworded, a tool declared) ships under the current version. `node scripts/check-version.mjs` (run on every push and weekly) fails when they disagree or run behind the registry, and only warns when a publish is pending.
+One version, the server's. The number published to the [official MCP Registry](https://registry.modelcontextprotocol.io) (`io.github.layerzlabs/layerz`, from the `server.json` of the Layerz code repo) is the only version; `plugin.json`, `.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`, `lhm.plugin.json`, the `X-Layerz-Client` header of the Claude and Cursor MCP entries (the Agent Plugins `mcp.json` read by ChatGPT and Codex carries none: OpenAI's public submission rejects server headers) and the `layerz_version` of every skill mirror it, never one of their own. A change to this repository alone (a skill reworded, a tool declared) ships under the current version. `node scripts/check-version.mjs` (run on every push and weekly) fails when they disagree or run behind the registry, and only warns when a publish is pending.
 
 ## Support
 

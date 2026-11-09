@@ -3,7 +3,7 @@ name: business-plan
 description: "Build or extend a business plan, a budget, a forecast or a three-statement model (P&L, balance sheet, cash flow) in Layerz; add assumptions, formulas, drivers, a dashboard; \"model this business\", \"build the BP\", \"add a hiring plan\". Reads the conventions first, lays out the structure the workspace expects, builds in one validated pass, keeps every stock as a rolling balance and the checks at zero, then edits incrementally."
 license: MIT
 metadata:
-  layerz_version: "0.6.0"
+  layerz_version: "1.1.0"
   generated_by: "layerzlabs/layerz scripts/build-plugin-skills.ts, from the modeling guide"
 ---
 
@@ -30,7 +30,7 @@ Build or extend a business plan, a budget, a forecast, a three-statement model; 
 
 ## References
 
-From the Layerz modeling guide (version 0.6.0; the whole guide: `layerz_get_conventions { include_guide: true }` or the `modeling-guide://reference` resource):
+From the Layerz modeling guide (version 1.1.0; the whole guide: `layerz_get_conventions { include_guide: true }` or the `modeling-guide://reference` resource):
 
 - [2. Structure: roles and hierarchy](references/02-structure-roles-and-hierarchy.md)
 - [3. Building: blueprint vs patch](references/03-building-blueprint-vs-patch.md)
