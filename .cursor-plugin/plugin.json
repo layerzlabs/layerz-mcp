@@ -19,7 +19,7 @@
     "forecast",
     "cfo"
   ],
-  "logo": "assets/logo.svg",
+  "logo": "assets/logo.png",
   "skills": "./skills/",
   "mcpServers": "./.cursor-plugin/mcp.json"
 }

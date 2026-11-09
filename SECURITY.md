@@ -16,4 +16,4 @@ Email **contact@layerz.cc**. Please include the steps to reproduce, the account 
 
 ## Supported versions
 
-The hosted server is the only version in service; this repository always describes the current one (`scripts/check-version.mjs` checks the manifests against the official MCP registry).
+The hosted server is the only version in service; this repository always describes the current one (the `version check` workflow checks the manifests against the official MCP registry).
