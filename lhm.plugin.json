@@ -22,7 +22,7 @@
     {
       "name": "layerz_list_models",
       "title": "List models",
-      "description": "Lists the models the authenticated user can access, and the workspaces they belong to (`workspaces[]`: id, name, kind personal | team, role admin | member, plan, `has_conventions`). Each model carries `workspace_id`, `can_write` (owner, workspace member or editor guest), `url`, `glyph` and `sharing: { shared, member_count, link_visibility }`. `q` filters by name (case- and accent-insensitive substring, `*` wildcard), `writable: true` keeps owner/editor models only. A model-scoped key gets its bound model only.",
+      "description": "A user's Layerz models are where their financial models, budgets, forecasts, closes and imported Excel models persist from one session to the next. Lists the models the authenticated user can access, most recently edited first, and the workspaces they belong to (`workspaces[]`: id, name, kind personal | team, role admin | member, plan, `has_conventions`). Each model carries `id`, `name`, `workspace_id`, `can_write` (owner, workspace member or editor guest) and `updated_at`; `layerz_get_model` returns its detail. `limit` caps the list (default 20, at most 200) and `total` counts every match. `q` filters by name (case- and accent-insensitive substring, `*` wildcard), `writable: true` keeps owner/editor models only. A model-scoped key gets its bound model only.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -35,6 +35,12 @@
           "writable": {
             "description": "When true, only models the caller can edit (owner or editor).",
             "type": "boolean"
+          },
+          "limit": {
+            "description": "Most recently edited models returned (default 20, at most 200).",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200
           }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -2610,7 +2616,7 @@
     {
       "name": "layerz_import_branch",
       "title": "Import data into branch",
-      "description": "Writes values onto a branch of the model, creating the branch when `branch.id` names none (`branch.display_name` required then). Two sources, mutually exclusive: `entries[]` (one value per item and period, items resolved by `item_uid` or `item_label`, created as assumptions when absent; `entry_uid` / `entry_label` target one entry of a list-mode item) or `file_id` (an uploaded spreadsheet parsed server-side, rows classified with the source's mapping rules). A new version of a file already imported: `file_id` + `replace_source_id`, nothing else (refreshed in place on the branch it feeds, default included). A first file onto the base: `file_id` + `branch.id: \"default\"` (a new source, own rows only).A new file of a kind the model already has: `file_id` + `rules_from_source_id` (classified with that sibling's rules, copied onto the new source). An entry's `timeline_ref` equals the target item's grain or `constant`; on a `formula` / `balance` it is a per-period override; on a `callup` it lands on the source. `replace: true` (with `branch.id`) wipes the branch's rows before writing; `replace_scope: 'import'` wipes only this source's own rows; `merge: true` upserts cell by cell; `dry_run: true` returns the impact without persisting (`purged_periods`, `overridden_items`, `validation_errors_new`, `suggested_replace_source`). Returns counts, `warnings` and, on the file path, `skipped`, `opening_entries`, `rules_copied`, `file_structure`. Persists one version labelled with `summary`.",
+      "description": "Writes values onto a branch of the model, creating the branch when `branch.id` names none (`branch.display_name` required then). Two sources, mutually exclusive: `entries[]` (one value per item and period, items resolved by `item_uid` or `item_label`, created as assumptions when absent; `entry_uid` / `entry_label` target one entry of a list-mode item) or `file_id` (an uploaded spreadsheet parsed server-side, rows classified with the source's mapping rules). A new version of a file already imported: `file_id` + `replace_source_id`, nothing else (refreshed in place on the branch it feeds, default included). A first file onto the base: `file_id` + `branch.id: \"default\"` (a new source, own rows only). A new file of a kind the model already has: `file_id` + `rules_from_source_id` (classified with that sibling's rules, copied onto the new source). An entry's `timeline_ref` equals the target item's grain or `constant`; on a `formula` / `balance` it is a per-period override; on a `callup` it lands on the source. `replace: true` (with `branch.id`) wipes the branch's rows before writing; `replace_scope: 'import'` wipes only this source's own rows; `merge: true` upserts cell by cell; `dry_run: true` returns the impact without persisting (`purged_periods`, `overridden_items`, `validation_errors_new`, `suggested_replace_source`). Returns counts, `warnings` and, on the file path, `skipped`, `opening_entries`, `rules_copied`, `file_structure`. Persists one version labelled with `summary`.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -2675,6 +2681,10 @@
             "type": "boolean"
           },
           "dry_run": {
+            "type": "boolean"
+          },
+          "confirm_replace": {
+            "description": "Replaces a source whose new version would empty its lines (refused otherwise with IMPORT_CONFIRMATION_REQUIRED and a replace_preview).",
             "type": "boolean"
           },
           "record_import": {
@@ -3291,6 +3301,10 @@
           "confirm_purge": {
             "description": "`delete` only: confirms the purge after a `PURGE_CONFIRMATION_REQUIRED` refusal.",
             "type": "boolean"
+          },
+          "confirm_replace": {
+            "description": "`sync` only: stages a fetch that would empty the lines the source fills (refused otherwise with `IMPORT_CONFIRMATION_REQUIRED` and a `replace_preview`).",
+            "type": "boolean"
           }
         },
         "required": [
@@ -3311,7 +3325,7 @@
     {
       "name": "layerz_list_transactions",
       "title": "List staged transactions",
-      "description": "Returns a data source's staged transactions (API connector or csv/fec file import) annotated with their routing: the target item and whether a `rule` or an `auto`-created item matched, the skip reason otherwise (mapping is the only routing path, no fuzzy match), or `ignored` for a row an `__ignore__` rule routes nowhere on purpose. `period` (YYYY-MM) and `q` (substring on description/category) filter the rows. The full staged import as a CSV file is `layerz_export { target: 'transactions' }`. A materialized legacy import derives one row per owned cell from the model's input rows.",
+      "description": "Returns a data source's staged transactions (API connector or csv/fec file import) annotated with their routing: the target item and whether a `rule` or an `auto`-created item matched, the skip reason otherwise (mapping is the only routing path, no fuzzy match), or `ignored` for a row an `__ignore__` rule routes nowhere on purpose. `period` (YYYY-MM) and `q` (substring on description/category) filter the rows; the rows come one page at a time (`limit`, default 200, at most 1000; `offset`), with the matching `total` on the first page. The full staged import as a CSV file is `layerz_export { target: 'transactions' }`. A materialized legacy import derives one row per owned cell from the model's input rows.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -3334,6 +3348,18 @@
           "q": {
             "description": "Keeps rows whose description/category contains this text.",
             "type": "string"
+          },
+          "limit": {
+            "description": "Rows per page (default 200, at most 1000).",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "offset": {
+            "description": "Rows to skip (default 0).",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
           }
         },
         "required": [
@@ -3787,7 +3813,7 @@
     {
       "name": "layerz_share_model",
       "title": "Invite or revoke model access",
-      "description": "Changes who can access a model, by `op`. `invite` (default): grants `email` the role `viewer` (read-only, default) or `editor`; a registered user gets an active share, an unregistered one a pending invite; both receive an email. `revoke`: removes the collaborator or pending invite `principal_id` (an id from the `sharing.members` of `layerz_get_model`). Owner-only. The link visibility (`invite` / `public`) is changed by the owner in the web app only. No version is persisted. Not advertised to read-only keys.",
+      "description": "Changes who can access a model, by `op`. `invite` (default): grants `email` the role `viewer` (read-only, default) or `editor`; a registered user gets an active share, an unregistered one a pending invite; both receive an email. `revoke`: removes the collaborator or pending invite `principal_id` (an id from the `sharing.members` of `layerz_get_model`). Anyone who edits the model may invite a new person; only the owner or a workspace admin changes an existing access, adds an editor seat or uses `revoke`. The link visibility (`invite` / `public`) is changed by the owner in the web app only. No version is persisted. Not advertised to read-only keys.",
       "inputSchema": {
         "type": "object",
         "properties": {
