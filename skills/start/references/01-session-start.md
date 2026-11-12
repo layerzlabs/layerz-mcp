@@ -1,6 +1,6 @@
 # 1. Session start
 
-> Section 1 of the Layerz modeling guide, version 1.1.0, copied verbatim by `scripts/build-plugin-skills.ts`. The formula language is `formula-spec://reference` (inline: `layerz_get_conventions { include_formula_spec: true }`).
+> Section 1 of the Layerz modeling guide, version 1.3.0, copied verbatim by `scripts/build-plugin-skills.ts`. The formula language is `formula-spec://reference` (inline: `layerz_get_conventions { include_formula_spec: true }`).
 
 1. **Conventions first.** `layerz_get_conventions({ model_id })` returns the
    conventions of the model's workspace (the standing preferences its members
@@ -27,7 +27,7 @@
    `meta` op of `layerz_patch`).
 4. **Model identity.** A model carries a `glyph`: a kebab-case Lucide icon
    name (https://lucide.dev/icons) shown as its emblem in the app and on shared
-   links. When `glyph` is absent from `layerz_get_model` / `layerz_list_models`,
+   links. When `glyph` is absent from `layerz_get_model`,
    set one coherent with the business via the `meta` op of `layerz_patch`
    (SaaS → `trending-up`, coffee shop → `coffee`, real estate → `house`,
    banking → `landmark`, energy → `wind`, HR → `users`, valuation → `scale`,
@@ -36,3 +36,8 @@
    `layerz_get_model` (full detail, branches, sharing roster) are the two
    reads; `layerz_validate_model` audits the DAG. Values returned with
    `computable: false` are zero-filled placeholders: fix the model first.
+6. **A `notice` is for the user.** A tool result can carry a `notice`
+   (the AI actions of the billing cycle nearing the plan's cap). Relay it to
+   the user in one sentence, once, and carry on with the task. Past the cap,
+   the tools answer `QUOTA_EXCEEDED` with the reset date and the link to
+   pass on.

@@ -3,7 +3,7 @@ name: start
 description: "First steps with Layerz: the first conversation, a workspace with no model yet, \"what can Layerz do\", \"where do I start\", \"import my Excel model\", a fresh connection. Lists the models, offers a template, a few questions or the import of an existing workbook when the account is empty, reads the workspace conventions before the first write, builds a first model in one pass and hands over its link. Use it whenever the Layerz tools are available and no model has been opened yet in the conversation."
 license: MIT
 metadata:
-  layerz_version: "1.1.0"
+  layerz_version: "1.3.0"
   generated_by: "layerzlabs/layerz scripts/build-plugin-skills.ts, from the modeling guide"
 ---
 
@@ -17,7 +17,7 @@ First conversation with Layerz, a workspace with no model yet, "what can Layerz 
 
 ## Sequence
 
-1. `layerz_list_models`. Read `workspaces[]` (`has_conventions` says whether its members wrote a Context) and `models[]`.
+1. `layerz_list_models`. Read `workspaces[]` (`has_conventions` says whether a Context is set: read it before the first write) and `models[]`.
 2. When `models` is empty, do not stop there. Offer two ways in one sentence:
    - from a template: `layerz_list_templates`, then `layerz_create_model { template_id, timelines }` (a template's `description` is its FINANCE.md, the usage guide);
    - from the business: ask 4 to 6 questions (what the company sells and to whom, how it makes money, stage and size, horizon, who reads the model) and wait for the answers. When the user says to go ahead, build on stated assumptions and list them in the FINANCE.md as open questions.
@@ -38,7 +38,7 @@ Finance judgement (is the plan credible, what to challenge, what a lender looks 
 
 ## References
 
-From the Layerz modeling guide (version 1.1.0; the whole guide: `layerz_get_conventions { include_guide: true }` or the `modeling-guide://reference` resource):
+From the Layerz modeling guide (version 1.3.0; the whole guide: `layerz_get_conventions { include_guide: true }` or the `modeling-guide://reference` resource):
 
 - [1. Session start](references/01-session-start.md)
 - [9. Templates](references/09-templates.md)
