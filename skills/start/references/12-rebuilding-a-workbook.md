@@ -1,6 +1,6 @@
 # 12. Rebuilding a workbook
 
-> Section 12 of the Layerz modeling guide, version 1.1.0, copied verbatim by `scripts/build-plugin-skills.ts`. The formula language is `formula-spec://reference` (inline: `layerz_get_conventions { include_formula_spec: true }`).
+> Section 12 of the Layerz modeling guide, version 1.3.0, copied verbatim by `scripts/build-plugin-skills.ts`. The formula language is `formula-spec://reference` (inline: `layerz_get_conventions { include_formula_spec: true }`).
 
 The target is the same results as the source, not the same cells. A
 workbook spells a model out cell by cell; the same work in Layerz primitives is

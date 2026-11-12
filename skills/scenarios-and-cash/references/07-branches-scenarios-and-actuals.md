@@ -1,6 +1,6 @@
 # 7. Branches, scenarios and actuals
 
-> Section 7 of the Layerz modeling guide, version 1.1.0, copied verbatim by `scripts/build-plugin-skills.ts`. The formula language is `formula-spec://reference` (inline: `layerz_get_conventions { include_formula_spec: true }`).
+> Section 7 of the Layerz modeling guide, version 1.3.0, copied verbatim by `scripts/build-plugin-skills.ts`. The formula language is `formula-spec://reference` (inline: `layerz_get_conventions { include_formula_spec: true }`).
 
 A branch is a scenario coordinate: the model reads as `base ⊕ branch`.
 
@@ -27,7 +27,9 @@ A branch is a scenario coordinate: the model reads as `base ⊕ branch`.
   `replace: true` wipes the branch then writes (carry-forward keeps periods the
   entries do not cover: send an explicit 0 to clear one; with
   `replace_scope: "import"` the entries are the source's whole contribution and
-  uncovered periods are dropped, `purged_periods`); `merge: true` upserts
+  uncovered periods are dropped, `purged_periods`; a new version that would
+  empty the source's lines is refused, `IMPORT_CONFIRMATION_REQUIRED`: check
+  the file, then `confirm_replace: true`); `merge: true` upserts
   cell by cell. Preview with `dry_run: true` (`overridden_items`,
   `validation_errors_new`), then commit.
 - **One file per exercise (a FEC per year, a monthly export).** Several

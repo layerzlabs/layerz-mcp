@@ -3,7 +3,7 @@ name: scenarios-and-cash
 description: "Scenarios and cash in Layerz: a base, upside and downside case, a fundraise or a delayed hire, runway, a cash-flow forecast, \"what if\", switching between actuals and forecast at the cutover. Creates scenario branches, writes scenario values without touching the base, reads branch versus base, and builds the cash balance and the runway the right way."
 license: MIT
 metadata:
-  layerz_version: "1.1.0"
+  layerz_version: "1.3.0"
   generated_by: "layerzlabs/layerz scripts/build-plugin-skills.ts, from the modeling guide"
 ---
 
@@ -27,7 +27,7 @@ Scenarios (base, upside, downside, a fundraise, a hire delayed), runway, a cash-
 
 ## References
 
-From the Layerz modeling guide (version 1.1.0; the whole guide: `layerz_get_conventions { include_guide: true }` or the `modeling-guide://reference` resource):
+From the Layerz modeling guide (version 1.3.0; the whole guide: `layerz_get_conventions { include_guide: true }` or the `modeling-guide://reference` resource):
 
 - [4. Stock-flow (rolling balances)](references/04-stock-flow-rolling-balances.md)
 - [7. Branches, scenarios and actuals](references/07-branches-scenarios-and-actuals.md)
