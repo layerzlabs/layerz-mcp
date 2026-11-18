@@ -1,7 +1,7 @@
 {
   "identifier": "layerzlabs-layerz",
   "name": "Layerz",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "author": "Layerz",
   "authorUrl": "https://github.com/layerzlabs",
   "homepage": "https://layerz.cc/for-agents",
@@ -56,7 +56,7 @@
     {
       "name": "layerz_get_model",
       "title": "Get model detail",
-      "description": "Returns the full detail of a model: items, lists, timelines, custom `formats`, `number_locale`, `glyph`, `revision_id` (sha256 fingerprint) and `version_number`, plus `branches[]` (id, display_name, priority, actuals_through, actuals_through_locked) and `sharing` with the roster (`members[]`: owner, collaborators and pending invites with their roles and ids, `is_owner`, `link_visibility`: `invite` = sign-in required, `public` = anyone with the link reads it). Item values are the base plan; read a branch with `layerz_read` `branch_id`. Larger payload than `layerz_read`, which returns a filtered snapshot. `conventions` carries the workspace conventions and the model FINANCE.md (as in `layerz_get_conventions`) when either is set.",
+      "description": "Returns the full detail of a model: items, lists, timelines, custom `formats`, `number_locale`, `glyph`, `appearance` (the colors of the model, for its dashboards), `revision_id` (sha256 fingerprint) and `version_number`, plus `branches[]` (id, display_name, priority, actuals_through, actuals_through_locked) and `sharing` with the roster (`members[]`: owner, collaborators and pending invites with their roles and ids, `is_owner`, `link_visibility`: `invite` = sign-in required, `public` = anyone with the link reads it). Item values are the base plan; read a branch with `layerz_read` `branch_id`. Larger payload than `layerz_read`, which returns a filtered snapshot. `conventions` carries the workspace conventions and the model FINANCE.md (as in `layerz_get_conventions`) when either is set.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -272,7 +272,8 @@
                 "chart",
                 "dashboard",
                 "kpi",
-                "mini_table"
+                "mini_table",
+                "text"
               ]
             }
           },
@@ -414,7 +415,7 @@
     {
       "name": "layerz_patch",
       "title": "Apply model patch",
-      "description": "Applies a batch of mutations to a model: `create`, `replace`, `update`, `delete`, `move`, `list_create`, `list_update`, `list_delete` and `meta` (name, subtitle, finance_md, timelines, formats, number_locale, default_branch, glyph). The batch is all-or-nothing: a validation failure persists nothing and returns every error at once (`MODEL_VALIDATION_ERROR`, `details[]`). A `create` may carry a temp `id` later ops reference (`parent`, `source`, `target`, `series`, `liste_ref`, `after`, `before`, `$_id` in a formula); `map` gives each temp id its UID. `replace` keeps the item's UID and presentation fields; `update` is a strict partial merge of the named fields. `after` / `before` (`create`, `move`, list ops) order siblings and tabs; `unchanged: true`: nothing written. Root accepts `section` and `dashboard`; `dashboard` accepts widgets only; a `formula` with both an expression and children is rejected (`FORMULA_EXPR_AND_CHILDREN`); a list-mode item takes `timeline_values`, a non-list item `value` / `values`. `branch_id` routes the value writes onto that branch as an overlay of the cells differing from the base; `compute` returns the computed series of the given UIDs (under `compute_branch`, default `branch_id`); `dry_run` validates and computes without persisting; `compare_values` adds `value_diff` (as in `layerz_diff`). Persists one version labelled with `summary`. Not advertised to read-only keys. Modeling patterns and examples: resource `modeling-guide://reference`.",
+      "description": "Applies a batch of mutations to a model: `create`, `replace`, `update`, `delete`, `move`, `list_create`, `list_update`, `list_delete` and `meta` (name, subtitle, finance_md, timelines, formats, number_locale, default_branch, glyph, appearance). The batch is all-or-nothing: a validation failure persists nothing and returns all errors (`MODEL_VALIDATION_ERROR`, `details[]`). A `create` may carry a temp `id` later ops reference (`parent`, `source`, `target`, `series`, `liste_ref`, `after`, `before`, `$_id` in a formula); `map` gives each temp id its UID. `replace` keeps the item's UID and presentation fields; `update` is a strict partial merge of the named fields. `after` / `before` (`create`, `move`, list ops) order siblings and tabs; `unchanged: true`: nothing written. Root accepts `section` and `dashboard`; `dashboard` accepts widgets only; a `formula` with both an expression and children is rejected (`FORMULA_EXPR_AND_CHILDREN`); a list-mode item takes `timeline_values`, a non-list item `value` / `values`. `branch_id` routes the value writes onto that branch as an overlay of the cells differing from the base; `compute` returns the computed series of the given UIDs (under `compute_branch`, default `branch_id`); `dry_run` validates and computes without persisting; `compare_values` adds `value_diff` (as in `layerz_diff`). Persists one version labelled with `summary`. Not advertised to read-only keys. Patterns and examples: resource `modeling-guide://reference`.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -467,7 +468,8 @@
                         "chart",
                         "dashboard",
                         "kpi",
-                        "mini_table"
+                        "mini_table",
+                        "text"
                       ]
                     },
                     "timeline_ref": {
@@ -675,13 +677,47 @@
                         }
                       ]
                     },
+                    "subtitle": {
+                      "description": "Dashboard-only: one line under the page title; null or an empty string clears it.",
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "filter_list": {
+                      "description": "Dashboard-only: the list (uid or name) the page can be filtered by; null clears it.",
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "text": {
+                      "description": "Text widget only: the words shown on the page.",
+                      "type": "string",
+                      "maxLength": 2000
+                    },
+                    "heading": {
+                      "description": "Text widget only: true = a section title.",
+                      "type": "boolean"
+                    },
                     "chart_type": {
                       "type": "string",
                       "enum": [
                         "line",
                         "bar",
                         "area",
-                        "bridge"
+                        "bridge",
+                        "donut"
                       ]
                     },
                     "series": {
@@ -718,6 +754,21 @@
                       "enum": [
                         "split",
                         "total"
+                      ]
+                    },
+                    "bar_layout": {
+                      "description": "Bar chart only: 'stacked' or 'grouped'; null goes back to the default rule.",
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "stacked",
+                            "grouped"
+                          ]
+                        },
+                        {
+                          "type": "null"
+                        }
                       ]
                     },
                     "by_branch": {
@@ -1014,7 +1065,8 @@
                         "chart",
                         "dashboard",
                         "kpi",
-                        "mini_table"
+                        "mini_table",
+                        "text"
                       ],
                       "description": "Role of the item. assumption: a typed input (value / values / timeline_values), the only role a branch overlays. formula: a computed transformation (formula). formula with no expression and children: an aggregator that sums its children (a subtotal value; a nested section is structural grouping with no value). callup: a typed mirror of one source whose value flows into its parent (source): balance flows, a value surfaced in a section or subtotal; a formula references its source directly instead. balance: a rolling stock (opening_balance) that sums its callup-child flows. section: structural container, no value. dashboard / chart / kpi / mini_table: presentational. A formula carrying both an expression and children is rejected (FORMULA_EXPR_AND_CHILDREN). A single bare reference written as a formula is auto-posed as a callup mirror, unless it pins a `timeline_ref` or an `aggregation` different from its source (then it stays a formula)."
                     },
@@ -1203,13 +1255,33 @@
                       "type": "string",
                       "minLength": 1
                     },
+                    "subtitle": {
+                      "description": "Dashboard-only: one line under the page title (the period, the perimeter, what is compared), shown on the web and in the Excel sheet.",
+                      "type": "string",
+                      "maxLength": 200
+                    },
+                    "filter_list": {
+                      "description": "Dashboard-only: the list (uid or name) the page can be read by element of. The reader then picks one or more elements beside the title and every widget on a line carried by that list follows. Absent = no filter.",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "text": {
+                      "description": "Text widget only (role `text`, a dashboard child): the words shown on the page, paragraphs separated by a blank line, `**bold**` for a figure. Static text, not recomputed.",
+                      "type": "string",
+                      "maxLength": 2000
+                    },
+                    "heading": {
+                      "description": "Text widget only: true reads as a section title over the tiles below.",
+                      "type": "boolean"
+                    },
                     "chart_type": {
                       "type": "string",
                       "enum": [
                         "line",
                         "bar",
                         "area",
-                        "bridge"
+                        "bridge",
+                        "donut"
                       ]
                     },
                     "series": {
@@ -1245,6 +1317,14 @@
                       "enum": [
                         "split",
                         "total"
+                      ]
+                    },
+                    "bar_layout": {
+                      "description": "Bar chart only: 'stacked' piles the series up (parts of one total), 'grouped' sets them side by side. Absent: stacked for a single list-backed series split by element, grouped otherwise.",
+                      "type": "string",
+                      "enum": [
+                        "stacked",
+                        "grouped"
                       ]
                     },
                     "by_branch": {
@@ -1565,7 +1645,8 @@
                             "chart",
                             "dashboard",
                             "kpi",
-                            "mini_table"
+                            "mini_table",
+                            "text"
                           ],
                           "description": "Role of the item. assumption: a typed input (value / values / timeline_values), the only role a branch overlays. formula: a computed transformation (formula). formula with no expression and children: an aggregator that sums its children (a subtotal value; a nested section is structural grouping with no value). callup: a typed mirror of one source whose value flows into its parent (source): balance flows, a value surfaced in a section or subtotal; a formula references its source directly instead. balance: a rolling stock (opening_balance) that sums its callup-child flows. section: structural container, no value. dashboard / chart / kpi / mini_table: presentational. A formula carrying both an expression and children is rejected (FORMULA_EXPR_AND_CHILDREN). A single bare reference written as a formula is auto-posed as a callup mirror, unless it pins a `timeline_ref` or an `aggregation` different from its source (then it stays a formula)."
                         },
@@ -1754,13 +1835,33 @@
                           "type": "string",
                           "minLength": 1
                         },
+                        "subtitle": {
+                          "description": "Dashboard-only: one line under the page title (the period, the perimeter, what is compared), shown on the web and in the Excel sheet.",
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        "filter_list": {
+                          "description": "Dashboard-only: the list (uid or name) the page can be read by element of. The reader then picks one or more elements beside the title and every widget on a line carried by that list follows. Absent = no filter.",
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "text": {
+                          "description": "Text widget only (role `text`, a dashboard child): the words shown on the page, paragraphs separated by a blank line, `**bold**` for a figure. Static text, not recomputed.",
+                          "type": "string",
+                          "maxLength": 2000
+                        },
+                        "heading": {
+                          "description": "Text widget only: true reads as a section title over the tiles below.",
+                          "type": "boolean"
+                        },
                         "chart_type": {
                           "type": "string",
                           "enum": [
                             "line",
                             "bar",
                             "area",
-                            "bridge"
+                            "bridge",
+                            "donut"
                           ]
                         },
                         "series": {
@@ -1796,6 +1897,14 @@
                           "enum": [
                             "split",
                             "total"
+                          ]
+                        },
+                        "bar_layout": {
+                          "description": "Bar chart only: 'stacked' piles the series up (parts of one total), 'grouped' sets them side by side. Absent: stacked for a single list-backed series split by element, grouped otherwise.",
+                          "type": "string",
+                          "enum": [
+                            "stacked",
+                            "grouped"
                           ]
                         },
                         "by_branch": {
@@ -2484,6 +2593,28 @@
                           "type": "null"
                         }
                       ]
+                    },
+                    "appearance": {
+                      "description": "The colours of the dashboards, replaced as a whole. `colors` is the palette of the model, 1 to 5 `#rrggbb` colours in order: they colour the chart series, and tints follow so that two series of a chart differ. `null` clears it (Layerz palette).",
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "colors": {
+                              "minItems": 1,
+                              "maxItems": 5,
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "pattern": "^#[0-9a-fA-F]{6}$"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
                   },
                   "required": [
@@ -3023,7 +3154,7 @@
     {
       "name": "layerz_list_integrations",
       "title": "List data sources",
-      "description": "Lists every data source feeding a model: API connectors (Qonto, Pennylane, Stripe, Airtable, Metabase) and file imports (kind csv | fec), each with kind, display_name, `branch_ids` (the branches it feeds), sync status, last_synced_at and `source_fields` (the payload fields an API connector's `field_map` can re-point its description / category / account_number to; null when there is nothing to choose). A row with `legacy_import_id` is a materialized pre-staging import that owns input rows but staged no transactions. `include_external_refs: true` adds `external_refs`: the links to items of other Layerz models, each with a value-aware `stale` flag (the source moved in a way that changes the snapshot) and its source health. Stored credentials are not returned.",
+      "description": "Lists every data source feeding a model: API connectors (Qonto, Pennylane, Stripe, Airtable, Metabase) and file imports (kind csv | fec), each with kind, display_name, `branch_ids` (the branches it feeds), sync status (`syncing` while a sync runs), last_synced_at, `config.window` (the retained bounds) beside `staged_window` (the months the source holds), `last_sync` (the last attempt: outcome, message, `retry_at` = no new sync before it after a provider rate limit) and `source_fields` (the payload fields an API connector's `field_map` can re-point its description / category / account_number to; null when there is nothing to choose). A row with `legacy_import_id` is a materialized pre-staging import that owns input rows but staged no transactions. `include_external_refs: true` adds `external_refs`: the links to items of other Layerz models, each with a value-aware `stale` flag (the source moved in a way that changes the snapshot) and its source health. Stored credentials are not returned.",
       "inputSchema": {
         "type": "object",
         "properties": {
