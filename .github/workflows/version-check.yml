@@ -32,8 +32,11 @@ jobs:
             import { readFileSync, readdirSync } from 'node:fs';
 
             const NAME = 'io.github.layerzlabs/layerz';
-            const MANIFESTS = ['plugin.json', '.claude-plugin/plugin.json', '.cursor-plugin/plugin.json', 'lhm.plugin.json'];
-            const MCP_FILES = ['mcp.json', '.mcp.json', '.cursor-plugin/mcp.json'];
+            const MANIFESTS = ['plugin.json', 'plugins/layerz/.claude-plugin/plugin.json', '.cursor-plugin/plugin.json', 'lhm.plugin.json'];
+            const MCP_FILES = ['mcp.json', 'plugins/layerz/.mcp.json', '.cursor-plugin/mcp.json'];
+            // MCP entries that must carry no header: OpenAI rejects them, and Anthropic's
+            // directory holds a plugin whose MCP entry sends one ("uses a credential").
+            const NO_HEADERS = ['mcp.json', 'plugins/layerz/.mcp.json'];
             const URL = 'https://layerz.cc/mcp';
 
             const json = (file) => JSON.parse(readFileSync(file, 'utf8'));
@@ -47,9 +50,9 @@ jobs:
               }
               // The Agent Plugins `mcp.json` carries no header: OpenAI's public
               // submission rejects a server with non-empty `headers`.
-              if (file === 'mcp.json') {
+              if (NO_HEADERS.includes(file)) {
                 if (server.headers && Object.keys(server.headers).length > 0) {
-                  console.error('✗ mcp.json: no headers (OpenAI public submission rejects them)');
+                  console.error(`✗ ${file}: no headers (OpenAI rejects them, Anthropic holds the plugin)`);
                   process.exit(1);
                 }
                 continue;
@@ -62,6 +65,19 @@ jobs:
               const md = readFileSync(`skills/${dir.name}/SKILL.md`, 'utf8');
               const m = /^\s*layerz_version: "([^"]+)"/m.exec(md);
               found.set(`skills/${dir.name}`, m?.[1] ?? '(no layerz_version)');
+            }
+            // The Claude plugin folder carries its own copy of the skills (the directory
+            // scans one folder only): it must match the root copy byte for byte.
+            for (const dir of readdirSync('skills', { withFileTypes: true })) {
+              if (!dir.isDirectory()) continue;
+              const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) =>
+                e.isDirectory() ? walk(`${d}/${e.name}`) : [`${d}/${e.name}`]);
+              for (const f of walk(`skills/${dir.name}`)) {
+                if (readFileSync(f, 'utf8') !== readFileSync(`plugins/layerz/${f}`, 'utf8')) {
+                  console.error(`✗ plugins/layerz/${f} differs from ${f}: copy the skills again`);
+                  process.exit(1);
+                }
+              }
             }
             for (const [file, version] of found) console.log(`${file}: ${version}`);
 
