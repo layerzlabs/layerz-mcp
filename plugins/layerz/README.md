@@ -2,6 +2,12 @@
 
 Financial models your agent builds and edits: items, formulas, dependencies and scenario branches, exported to standard Excel with live formulas.
 
+Install in Claude Code:
+
+```
+/plugin install layerz --marketplace layerzlabs/layerz-mcp
+```
+
 This plugin bundles:
 
 - **The hosted Layerz MCP server** (`https://layerz.cc/mcp`). Sign-in is handled by Claude through OAuth with your Layerz account. The plugin reads nothing from your machine.
